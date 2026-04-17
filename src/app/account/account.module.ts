@@ -8,6 +8,7 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { ConfirmEmailComponent } from './confirm-email/confirm-email.component';
 import { SendEmailComponent } from './send-email/send-email.component';
 import { ResetPasswordComponent } from './reset-password/reset-password.component';
+import { RegisterAvatarComponent } from './register/register-avatar.component';
 
 
 
@@ -15,6 +16,7 @@ import { ResetPasswordComponent } from './reset-password/reset-password.componen
   declarations: [
     LoginComponent,
     RegisterComponent,
+    RegisterAvatarComponent,
     ConfirmEmailComponent,
     SendEmailComponent,
     ResetPasswordComponent

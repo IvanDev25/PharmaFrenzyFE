@@ -1,0 +1,82 @@
+<div class="admin-page">
+  <div class="admin-header">
+    <h1>RxWallet Withdrawal Requests</h1>
+    <p>Review each student cash-out request, confirm their submitted GCash details, and update the payout status.</p>
+  </div>
+
+  <section class="table-card withdrawal-page-card">
+    <div class="section-head filter-head">
+      <div>
+        <h2>Requests</h2>
+        <p class="withdrawal-panel__copy">Students withdraw RxCoin through GCash. Approve, reject, or mark a request as paid after sending the payout.</p>
+      </div>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Status</mat-label>
+        <mat-select [value]="selectedWithdrawalStatus" (selectionChange)="onWithdrawalStatusFilterChange($event.value)">
+          <mat-option value="">All requests</mat-option>
+          <mat-option value="Pending">Pending</mat-option>
+          <mat-option value="Approved">Approved</mat-option>
+          <mat-option value="Rejected">Rejected</mat-option>
+          <mat-option value="Paid">Paid</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    <div class="performance-list" *ngIf="loadingWithdrawalRequests">
+      <article class="performance-item" *ngFor="let row of [1,2,3]">
+        <span class="app-skeleton app-skeleton--title" style="width: 180px;"></span>
+        <span class="app-skeleton app-skeleton--line" style="width: 260px; height: 14px;"></span>
+        <span class="app-skeleton app-skeleton--line" style="width: 320px; height: 14px;"></span>
+      </article>
+    </div>
+
+    <div class="performance-list" *ngIf="!loadingWithdrawalRequests && withdrawalRequests.length">
+      <article class="performance-item withdrawal-item" *ngFor="let request of withdrawalRequests">
+        <div class="question-top">
+          <span class="subject-pill">{{ request.studentName || 'Student' }}</span>
+          <span class="score-pill">{{ request.rxCoinAmount | number: '1.1-2' }} RxCoin</span>
+        </div>
+
+        <h3>{{ request.pesoAmount | currency: 'PHP':'symbol':'1.2-2' }} to {{ request.gcashName || 'Unnamed GCash account' }}</h3>
+        <p>{{ request.studentEmail || 'No email available.' }}</p>
+
+        <div class="withdrawal-detail-grid">
+          <div class="withdrawal-detail">
+            <span class="meta-label">GCash Name</span>
+            <strong>{{ request.gcashName || 'Not provided' }}</strong>
+          </div>
+
+          <div class="withdrawal-detail">
+            <span class="meta-label">GCash Number</span>
+            <strong>{{ request.gcashNumber || 'Not provided' }}</strong>
+          </div>
+
+          <div class="withdrawal-detail">
+            <span class="meta-label">Status</span>
+            <strong>{{ request.status }}</strong>
+          </div>
+        </div>
+
+        <p class="meta">Requested: {{ request.requestedAtUtc | date: 'medium' }}</p>
+        <p class="meta" *ngIf="request.reviewedAtUtc">Reviewed: {{ request.reviewedAtUtc | date: 'medium' }} by {{ request.reviewedByAdminName || 'Admin' }}</p>
+
+        <div class="inline-actions">
+          <button mat-stroked-button color="primary" type="button" [disabled]="updatingWithdrawalId === request.id || !canApprove(request)" (click)="updateWithdrawalStatus(request, 'Approved')">
+            Approve
+          </button>
+          <button mat-stroked-button color="warn" type="button" [disabled]="updatingWithdrawalId === request.id || !canReject(request)" (click)="updateWithdrawalStatus(request, 'Rejected')">
+            Reject
+          </button>
+          <button mat-stroked-button type="button" [disabled]="updatingWithdrawalId === request.id || !canMarkPaid(request)" (click)="updateWithdrawalStatus(request, 'Paid')">
+            Mark Paid
+          </button>
+        </div>
+      </article>
+    </div>
+
+    <div class="table-state" *ngIf="!loadingWithdrawalRequests && !withdrawalRequests.length">
+      No withdrawal requests found for this filter.
+    </div>
+  </section>
+</div>

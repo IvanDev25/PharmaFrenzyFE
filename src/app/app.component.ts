@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { finalize } from 'rxjs';
 import { AccountService } from './account/account.service';
 
 @Component({
@@ -7,8 +8,11 @@ import { AccountService } from './account/account.service';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent implements OnInit {
+  isLoading = true;
 
-  constructor(private accountService: AccountService) {
+  constructor(
+    private accountService: AccountService
+  ) {
     
   }
 
@@ -19,16 +23,21 @@ export class AppComponent implements OnInit {
   private refreshUser() {
     const jwt = this.accountService.getJWT();
     if (jwt) {
-      this.accountService.refreshUser(jwt).subscribe({
-        next: _ => {},
-        error: _ => {
-          this.accountService.logout();
-        }
-      })
+      this.accountService.refreshUser(jwt)
+        .pipe(finalize(() => this.isLoading = false))
+        .subscribe({
+          next: _ => {},
+          error: _ => {
+            this.accountService.logout();
+          }
+        });
     } else {
-      this.accountService.refreshUser(null).subscribe();
+      this.accountService.refreshUser(null)
+        .pipe(finalize(() => this.isLoading = false))
+        .subscribe();
     }
   }
+
   title = 'Ivan Identity';
 }
  

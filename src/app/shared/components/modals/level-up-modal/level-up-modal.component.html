@@ -1,0 +1,33 @@
+<div class="level-up-modal">
+  <div class="scene-light"></div>
+  <div class="confetti-layer" aria-hidden="true">
+    <span class="confetti confetti--1"></span>
+    <span class="confetti confetti--2"></span>
+    <span class="confetti confetti--3"></span>
+    <span class="confetti confetti--4"></span>
+    <span class="confetti confetti--5"></span>
+    <span class="confetti confetti--6"></span>
+    <span class="confetti confetti--7"></span>
+    <span class="confetti confetti--8"></span>
+    <span class="confetti confetti--9"></span>
+    <span class="confetti confetti--10"></span>
+  </div>
+
+  <button type="button" class="close-button" aria-label="Close" (click)="bsModalRef.hide()">x</button>
+
+  <div class="level-up-glow"></div>
+
+  <span class="eyebrow">Congratulations</span>
+  <h2>You reached Level {{ studentLevel }}</h2>
+  <p>Level {{ previousStudentLevel }} to Level {{ studentLevel }} unlocked. Keep going.</p>
+
+  <div class="badge-ring">
+    <div class="badge-ring__inner">
+      <img class="level-badge-image" [src]="levelBadge(studentLevel)" [alt]="'Level ' + studentLevel + ' badge'" />
+    </div>
+  </div>
+
+  <div class="actions">
+    <button mat-flat-button color="primary" type="button" (click)="bsModalRef.hide()">Awesome</button>
+  </div>
+</div>

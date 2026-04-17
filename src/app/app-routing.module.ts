@@ -1,54 +1,31 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
+import { AdminComponent } from './admin/admin.component';
+import { AdminWithdrawalsComponent } from './admin-withdrawals/admin-withdrawals.component';
+import { ExamAttemptComponent } from './exam-attempt/exam-attempt.component';
+import { ExamHistoryComponent } from './exam-history/exam-history.component';
+import { ExamsComponent } from './exams/exams.component';
 import { HomeComponent } from './home/home.component';
-import { PlayComponent } from './play/play.component';
+import { ProfileComponent } from './profile/profile.component';
+import { RankingComponent } from './ranking/ranking.component';
+import { RxWalletComponent } from './rx-wallet/rx-wallet.component';
 import { NotFoundComponent } from './shared/components/errors/not-found/not-found.component';
 import { AuthorizationGuard } from './shared/guards/authorization.guard';
-import { TeamComponent } from './team/team.component';
-import { ManagerComponent } from './manager/manager.component';
-import { CategoryComponent } from './category/category.component';
-import { PlayerComponent } from './player/player.component';
-import { AdminPermissionGuard } from './account/permission/admin-permission.guard';
 
 const routes: Routes = [
   { path: '', component: HomeComponent },
-  {
-    path: '',
-    runGuardsAndResolvers: 'always',
-    canActivate: [AuthorizationGuard],
-    children: [
-      { 
-        path: 'Admin', 
-        component: PlayComponent, 
-        canActivate: [AdminPermissionGuard], 
-        data: { permission: 'adminManagement' } 
-      },
-      { 
-        path: 'Team', 
-        component: TeamComponent, 
-        canActivate: [AdminPermissionGuard],
-        data: { permission: 'teamManagement' }
-      },
-      { 
-        path: 'Manager', 
-        component: ManagerComponent, 
-        canActivate: [AdminPermissionGuard],
-        data: { permission: 'managerManagement' }
-      },
-      { 
-        path: 'Category', 
-        component: CategoryComponent, 
-        canActivate: [AdminPermissionGuard],
-        data: { permission: 'categoryManagement' }
-      },
-      { 
-        path: 'Player', 
-        component: PlayerComponent, 
-        canActivate: [AdminPermissionGuard],
-        data: { permission: 'playerManagement' }
-      },
-    ]
-  },
+  { path: 'Admin', component: AdminComponent, canActivate: [AuthorizationGuard], data: { roles: ['Admin'] } },
+  { path: 'Admin/withdrawals', component: AdminWithdrawalsComponent, canActivate: [AuthorizationGuard], data: { roles: ['Admin'] } },
+  { path: 'Admin/modules', component: AdminComponent, canActivate: [AuthorizationGuard], data: { roles: ['Admin'] } },
+  { path: 'Admin/subjects', component: AdminComponent, canActivate: [AuthorizationGuard], data: { roles: ['Admin'] } },
+  { path: 'Admin/questions', component: AdminComponent, canActivate: [AuthorizationGuard], data: { roles: ['Admin'] } },
+  { path: 'Admin/performance', component: AdminComponent, canActivate: [AuthorizationGuard], data: { roles: ['Admin'] } },
+  { path: 'exams', component: ExamsComponent, canActivate: [AuthorizationGuard], data: { roles: ['Student'] } },
+  { path: 'exams/history', component: ExamHistoryComponent, canActivate: [AuthorizationGuard], data: { roles: ['Student'] } },
+  { path: 'exams/attempt/:attemptId', component: ExamAttemptComponent, canActivate: [AuthorizationGuard], data: { roles: ['Student'] } },
+  { path: 'rankings', component: RankingComponent, canActivate: [AuthorizationGuard], data: { roles: ['Student'] } },
+  { path: 'wallet', component: RxWalletComponent, canActivate: [AuthorizationGuard], data: { roles: ['Student'] } },
+  { path: 'profile', component: ProfileComponent, canActivate: [AuthorizationGuard] },
   { path: 'account', loadChildren: () => import('./account/account.module').then(m => m.AccountModule) },
   { path: 'not-found', component: NotFoundComponent },
   { path: '**', component: NotFoundComponent, pathMatch: 'full' }

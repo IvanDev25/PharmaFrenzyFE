@@ -1,0 +1,22 @@
+<div class="daily-streak-modal">
+  <div class="scene-light"></div>
+
+  <button type="button" class="close-button" aria-label="Close" (click)="bsModalRef.hide()">x</button>
+
+  <div class="reward-flame" aria-hidden="true">
+    <span>{{ currentStreak }}</span>
+  </div>
+
+  <span class="eyebrow">Daily Reward Claimed</span>
+  <h2>{{ currentStreak }} Day Streak!</h2>
+  <p>You earned <strong>{{ rewardPoints | number: '1.1-2' }}</strong> points for today&apos;s streak reward.</p>
+
+  <div class="reward-strip">
+    <span>Redeemed</span>
+    <span>Day {{ currentStreak }}</span>
+  </div>
+
+  <div class="actions">
+    <button mat-flat-button color="primary" type="button" (click)="bsModalRef.hide()">Awesome</button>
+  </div>
+</div>

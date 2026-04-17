@@ -1,0 +1,48 @@
+<section class="history-shell">
+  <section class="page-navbar">
+    <app-navbar [forceShow]="true"></app-navbar>
+  </section>
+  <div class="history-header">
+    <p class="eyebrow">Attempts</p>
+    <h1>My Exam History</h1>
+    <p>Review previous attempts, scores, and detailed feedback.</p>
+  </div>
+
+  <div class="history-list" *ngIf="loading">
+    <div class="history-card" *ngFor="let row of [1,2,3]">
+      <div class="top-row">
+        <span class="app-skeleton app-skeleton--title" style="width: 220px;"></span>
+        <span class="app-skeleton app-skeleton--line" style="width: 92px; height: 30px;"></span>
+      </div>
+
+      <div class="meta-grid">
+        <span class="app-skeleton app-skeleton--line" style="width: 160px;"></span>
+        <span class="app-skeleton app-skeleton--line" style="width: 170px;"></span>
+        <span class="app-skeleton app-skeleton--line" style="width: 110px;"></span>
+      </div>
+
+      <span class="app-skeleton app-skeleton--line" style="width: 100%; height: 14px;"></span>
+    </div>
+  </div>
+
+  <div class="history-list" *ngIf="!loading && attempts.length">
+    <a class="history-card" *ngFor="let attempt of attempts" [routerLink]="['/exams/attempt', attempt.attemptId]">
+      <div class="top-row">
+        <h2>{{ attempt.moduleName }} / {{ attempt.subjectName }} / Set {{ attempt.questionSetNumber }}</h2>
+        <span class="status-badge" [class.in-progress]="attempt.status === 'InProgress'" [class.submitted]="attempt.status === 'Submitted'">{{ attempt.status }}</span>
+      </div>
+
+      <div class="meta-grid">
+        <span>Started {{ attempt.startedAt | date: 'medium' }}</span>
+        <span *ngIf="attempt.submittedAt">Submitted {{ attempt.submittedAt | date: 'medium' }}</span>
+        <span>{{ attempt.totalScore }}/{{ attempt.totalPossibleScore }} points</span>
+      </div>
+
+      <p class="feedback">{{ attempt.overallFeedback || 'Open this attempt to see full details.' }}</p>
+    </a>
+  </div>
+
+  <div class="history-state" *ngIf="!loading && !attempts.length">
+    You do not have any exam attempts yet.
+  </div>
+</section>

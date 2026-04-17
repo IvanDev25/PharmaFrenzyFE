@@ -1,0 +1,56 @@
+
+  
+<div class="profile-page" *ngIf="user$ | async as user">
+      <div>
+  <app-navbar [forceShow]="true"></app-navbar>
+      </div>
+  <div class="profile-card">
+    <div class="profile-hero">
+      <div class="profile-avatar">{{ getInitials(user) }}</div>
+      <div>
+        <h1>{{ user.firstName | titlecase }} {{ user.lastName | titlecase }}</h1>
+        <p>{{ user.role || 'User' }}</p>
+      </div>
+    </div>
+
+    <form [formGroup]="profileForm" class="profile-form">
+      <div class="details-grid">
+        <mat-form-field appearance="outline">
+          <mat-label>First Name</mat-label>
+          <input matInput formControlName="firstName" />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Last Name</mat-label>
+          <input matInput formControlName="lastName" />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Email</mat-label>
+          <input matInput type="email" formControlName="email" />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Phone Number</mat-label>
+          <input matInput formControlName="phoneNumber" />
+        </mat-form-field>
+
+        <div class="detail-item">
+          <span class="detail-label">Role</span>
+          <span class="detail-value">{{ user.role || 'N/A' }}</span>
+        </div>
+
+        <div class="detail-item">
+          <span class="detail-label">Status</span>
+          <span class="detail-value">{{ user.status || 'N/A' }}</span>
+        </div>
+      </div>
+
+      <div class="profile-actions">
+        <button mat-flat-button color="primary" type="button" [disabled]="saving" (click)="saveProfile()">
+          {{ saving ? 'Saving...' : 'Save Changes' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

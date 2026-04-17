@@ -52,16 +52,14 @@
 
 
 <div style="display: flex; align-items: center; justify-content: center; width: 100%; height: 100%;">
-    
-<div class="login-container">
+  <div class="login-container">
     <div class="logo">
       <div class="logo-circle"></div>
       <h2>Welcome Back</h2>
       <p class="subtitle">Please sign in to your account</p>
     </div>
-  
+
     <form [formGroup]="loginForm" (ngSubmit)="login()">
-      <!-- Username -->
       <div class="form-group">
         <label for="userName">Username</label>
         <input
@@ -74,8 +72,7 @@
           Username is required.
         </div>
       </div>
-  
-      <!-- Password -->
+
       <div class="form-group">
         <label for="password">Password</label>
         <input
@@ -88,13 +85,11 @@
           Password is required.
         </div>
       </div>
-  
-      <!-- Errors from backend -->
+
       <div *ngIf="errorMessages.length > 0" class="error-messages">
         <div *ngFor="let error of errorMessages" class="error">{{ error }}</div>
       </div>
-  
-      <!-- Actions -->
+
       <div class="checkbox-group">
         <div class="remember-me">
           <input type="checkbox" id="remember" />
@@ -104,10 +99,13 @@
           Forgot Password?
         </a>
       </div>
-  
+
       <button type="submit" class="signin-btn">Sign In</button>
+
+      <div class="register-link">
+        <span>Don't have an account?</span>
+        <a routerLink="/account/register">Create account</a>
+      </div>
     </form>
   </div>
 </div>
-
-  

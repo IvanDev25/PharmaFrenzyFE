@@ -13,6 +13,9 @@ import {MatButtonModule} from '@angular/material/button';
 import {MatMenuModule} from '@angular/material/menu';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { HttpClientModule } from '@angular/common/http';
+import { DailyStreakModalComponent } from './components/modals/daily-streak-modal/daily-streak-modal.component';
+import { ExamCompleteModalComponent } from './components/modals/exam-complete-modal/exam-complete-modal.component';
+import { LevelUpModalComponent } from './components/modals/level-up-modal/level-up-modal.component';
 import { NoificationComponent } from './components/modals/noification/noification.component';
 import { ModalModule } from 'ngx-bootstrap/modal';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -24,18 +27,26 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatSelectModule } from '@angular/material/select';
+import { MatTabsModule } from '@angular/material/tabs';
+import { AvatarPickerDialogComponent } from '../account/register/avatar-picker-dialog.component';
 @NgModule({
   declarations: [
     NotFoundComponent,
     ValidationMessagesComponent,
-    NoificationComponent
+    NoificationComponent,
+    DailyStreakModalComponent,
+    ExamCompleteModalComponent,
+    LevelUpModalComponent,
+    AvatarPickerDialogComponent
   ],
   imports: [
     CommonModule,
     RouterModule,
     ReactiveFormsModule,
     HttpClientModule,
-    ModalModule.forRoot()
+    ModalModule.forRoot(),
+    MatDialogModule,
+    MatButtonModule
     
   ],
   exports: [
@@ -54,7 +65,7 @@ import { MatSelectModule } from '@angular/material/select';
     HttpClientModule,
     ValidationMessagesComponent,
     MatSelectModule,
-    MatFormFieldModule, MatInputModule, MatTableModule, MatSortModule, MatPaginatorModule,MatTooltipModule,MatDialogModule,CommonModule,MatDialogModule
+    MatFormFieldModule, MatInputModule, MatTableModule, MatSortModule, MatPaginatorModule,MatTooltipModule,MatDialogModule,CommonModule,MatDialogModule,MatTabsModule
   ]
 })
 export class SharedModule { }

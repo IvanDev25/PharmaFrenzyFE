@@ -1,0 +1,145 @@
+.game-notification {
+  position: relative;
+  overflow: hidden;
+  border-radius: 28px;
+  padding: 28px;
+  background:
+    radial-gradient(circle at top right, rgba(255, 209, 102, 0.22), transparent 28%),
+    radial-gradient(circle at bottom left, rgba(105, 219, 255, 0.14), transparent 24%),
+    linear-gradient(180deg, #111936 0%, #0a1027 100%);
+  border: 1px solid rgba(109, 140, 245, 0.26);
+  box-shadow: 0 26px 56px rgba(5, 11, 34, 0.4);
+  color: #eef3ff;
+}
+
+.game-notification.is-error {
+  background:
+    radial-gradient(circle at top right, rgba(255, 121, 121, 0.24), transparent 28%),
+    radial-gradient(circle at bottom left, rgba(255, 209, 102, 0.1), transparent 24%),
+    linear-gradient(180deg, #26112d 0%, #180d22 100%);
+  border-color: rgba(255, 126, 126, 0.22);
+}
+
+.game-notification__close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  color: #eef3ff;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.game-notification__close:hover {
+  background: rgba(255, 255, 255, 0.16);
+  transform: translateY(-1px);
+}
+
+.game-notification__hero {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 20px;
+  align-items: center;
+}
+
+.game-notification__icon-wrap {
+  width: 88px;
+  height: 88px;
+  border-radius: 24px;
+  display: grid;
+  place-items: center;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.game-notification__icon {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  filter: drop-shadow(0 12px 18px rgba(13, 20, 58, 0.22));
+}
+
+.game-notification__eyebrow {
+  display: inline-block;
+  margin-bottom: 6px;
+  color: #9fc3ff;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.game-notification__copy h2 {
+  margin: 0;
+  color: #ffffff;
+  font-size: 32px;
+  line-height: 1.05;
+  font-family: 'Anta', 'Poppins', sans-serif;
+}
+
+.game-notification__copy p {
+  margin: 10px 0 0;
+  color: rgba(232, 238, 255, 0.82);
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.game-notification__footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 24px;
+}
+
+.game-notification__button {
+  min-width: 132px;
+  min-height: 48px;
+  border: 0;
+  border-radius: 999px;
+  padding: 0 22px;
+  background: linear-gradient(135deg, var(--student-pink) 0%, var(--student-orange) 100%);
+  box-shadow: 0 14px 24px rgba(255, 110, 129, 0.24);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+@media (max-width: 640px) {
+  .game-notification {
+    padding: 24px 20px;
+  }
+
+  .game-notification__hero {
+    grid-template-columns: 1fr;
+  }
+
+  .game-notification__icon-wrap {
+    width: 76px;
+    height: 76px;
+  }
+
+  .game-notification__icon {
+    width: 56px;
+    height: 56px;
+  }
+
+  .game-notification__copy h2 {
+    font-size: 26px;
+  }
+
+  .game-notification__footer {
+    justify-content: stretch;
+  }
+
+  .game-notification__button {
+    width: 100%;
+  }
+}

@@ -1,0 +1,128 @@
+<section class="wallet-shell" *ngIf="user$ | async as user">
+  <section class="page-navbar">
+    <app-navbar [forceShow]="true"></app-navbar>
+  </section>
+
+  <div class="wallet-page">
+    <div class="wallet-layout">
+      <section class="wallet-hero">
+        <div class="wallet-hero__copy">
+          <span class="wallet-hero__eyebrow">RxWallet</span>
+          <h1>Withdraw your RxCoin through GCash.</h1>
+          <p>Track your balance, see pending requests, and submit a new withdrawal for admin review.</p>
+        </div>
+
+        <div class="wallet-hero__visual">
+          <img src="assets/RxWallet.png" alt="RxWallet" />
+        </div>
+      </section>
+
+      <div class="wallet-grid">
+        <section class="wallet-balance-panel">
+          <div class="panel-header">
+            <div>
+              <span class="panel-eyebrow">Balance</span>
+              <h2>Available now</h2>
+            </div>
+            <span class="panel-status" *ngIf="walletLoading">Loading...</span>
+          </div>
+
+          <div class="wallet-balance-card" *ngIf="wallet as currentWallet; else walletLoadingState">
+            <div class="wallet-balance-card__top">
+              <img class="wallet-balance-card__wallet" src="assets/RxWallet.png" alt="RxWallet" />
+              <div class="wallet-balance-card__summary">
+                <span class="wallet-balance-card__label">Current Balance</span>
+                <div class="wallet-balance-card__amount">
+                  <img src="assets/RxCoin.png" alt="RxCoin" />
+                  <strong>{{ currentWallet.availableRxCoinBalance | number: '1.1-2' }}</strong>
+                </div>
+              </div>
+            </div>
+
+            <div class="wallet-balance-card__peso">
+              {{ currentWallet.availablePesoEquivalent | currency: 'PHP':'symbol':'1.2-2' }}
+            </div>
+
+            <div class="wallet-balance-card__meta">
+              <span>Pending: {{ currentWallet.pendingRxCoinBalance | number: '1.1-2' }} RxCoin</span>
+              <span>Rate: {{ currentWallet.conversionRateRxCoinPerPeso | number: '1.0-0' }} RxCoin = 1 Peso</span>
+            </div>
+          </div>
+
+          <ng-template #walletLoadingState>
+            <div class="empty-panel">Your wallet balance and withdrawal history will appear here.</div>
+          </ng-template>
+        </section>
+
+        <section class="withdraw-panel">
+          <div class="panel-header">
+            <div>
+              <span class="panel-eyebrow">GCash Request</span>
+              <h2>Request withdrawal</h2>
+            </div>
+          </div>
+
+          <form [formGroup]="withdrawalForm" class="withdraw-form" (ngSubmit)="submitWithdrawal()">
+            <mat-form-field appearance="outline">
+              <input matInput type="number" formControlName="rxCoinAmount" placeholder="RxCoin Amount" />
+            </mat-form-field>
+
+            <div class="withdraw-calculator" *ngIf="wallet as currentWallet">
+              <div class="withdraw-calculator__row">
+                <span>Request</span>
+                <strong>{{ requestedRxCoinAmount | number: '1.1-2' }} RxCoin</strong>
+              </div>
+              <div class="withdraw-calculator__row">
+                <span>You will receive</span>
+                <strong>{{ withdrawalPesoEquivalent | currency: 'PHP':'symbol':'1.2-2' }}</strong>
+              </div>
+              <div class="withdraw-calculator__row withdraw-calculator__row--muted">
+                <span>Rate</span>
+                <span>{{ currentWallet.conversionRateRxCoinPerPeso | number: '1.0-0' }} RxCoin = 1 Peso</span>
+              </div>
+            </div>
+
+            <mat-form-field appearance="outline">
+              <input matInput formControlName="gcashNumber" placeholder="GCash Number" />
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <input matInput formControlName="gcashName" placeholder="GCash Name" />
+            </mat-form-field>
+
+            <button mat-flat-button color="primary" type="submit" [disabled]="submittingWithdrawal">
+              {{ submittingWithdrawal ? 'Submitting...' : 'Request Withdrawal' }}
+            </button>
+          </form>
+        </section>
+      </div>
+
+      <section class="wallet-history-panel">
+        <div class="panel-header">
+          <div>
+            <span class="panel-eyebrow">Review</span>
+            <h2>Withdrawal history</h2>
+          </div>
+        </div>
+
+        <div class="wallet-history" *ngIf="wallet?.withdrawalRequests?.length; else emptyHistory">
+          <div class="wallet-history__item" *ngFor="let request of wallet?.withdrawalRequests">
+            <div class="wallet-history__top">
+              <strong>{{ request.rxCoinAmount | number: '1.1-2' }} RxCoin</strong>
+              <span class="wallet-status-chip" [class.is-approved]="request.status === 'Approved'" [class.is-paid]="request.status === 'Paid'" [class.is-rejected]="request.status === 'Rejected'">
+                {{ request.status }}
+              </span>
+            </div>
+            <p>{{ request.pesoAmount | currency: 'PHP':'symbol':'1.2-2' }} to {{ request.gcashName }} ({{ request.gcashNumber }})</p>
+            <p class="wallet-history__meta">Requested: {{ request.requestedAtUtc | date: 'medium' }}</p>
+            <p class="wallet-history__meta" *ngIf="request.adminNotes">Admin note: {{ request.adminNotes }}</p>
+          </div>
+        </div>
+
+        <ng-template #emptyHistory>
+          <div class="empty-panel">No withdrawal requests yet. Submit one when you are ready to cash out.</div>
+        </ng-template>
+      </section>
+    </div>
+  </div>
+</section>

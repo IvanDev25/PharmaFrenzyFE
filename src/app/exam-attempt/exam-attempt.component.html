@@ -1,0 +1,125 @@
+<section class="attempt-shell" *ngIf="!loading && attempt as data">
+  <section class="page-navbar">
+    <app-navbar [forceShow]="true"></app-navbar>
+  </section>
+  <div class="attempt-header">
+    <div>
+      <p class="eyebrow">{{ data.moduleName }}</p>
+      <h1>{{ data.subjectName }}</h1>
+      <p class="meta">
+        Set {{ data.questionSetNumber }}
+        <span class="attempt-points">•</span>
+        {{ data.totalQuestions }} questions
+        <span *ngIf="data.status !== 'InProgress'" class="attempt-points">
+          •
+          <img class="points-icon" src="assets/points-icon.png" alt="Points" />
+          {{ data.totalScore }}/{{ data.totalPossibleScore }} points
+        </span>
+      </p>
+    </div>
+
+    <button mat-stroked-button color="primary" (click)="goToHistory()">My History</button>
+  </div>
+
+  <ng-container *ngIf="showQuestionView; else resultView">
+    <div class="progress-card" *ngIf="currentQuestion as question">
+      <div class="progress-top">
+        <span>Question {{ currentIndex + 1 }} of {{ data.questions.length }}</span>
+        <div class="progress-meta">
+          <span class="attempt-points">
+            <img class="points-icon" src="assets/points-icon.png" alt="Points" />
+            {{ question.score }} point{{ question.score > 1 ? 's' : '' }}
+          </span>
+          <span class="timer-chip" *ngIf="hasTimer">Time Left: {{ formattedTime() }}</span>
+        </div>
+      </div>
+
+      <h2>{{ question.questionText }}</h2>
+
+      <div class="option-list">
+        <label class="option-card"
+          *ngFor="let option of question.options; let i = index; trackBy: trackOption"
+          [class.selected]="selectedAnswer === option.value"
+          [class.correct]="optionState(option.value) === 'correct'"
+          [class.wrong]="optionState(option.value) === 'wrong'">
+          <input type="radio" name="currentAnswer" [checked]="selectedAnswer === option.value" [disabled]="!!currentAnswerResult || submitting" (change)="chooseAnswer(option.value)" />
+          <span class="option-tag">{{ optionDisplayLabel(i) }}</span>
+          <span>{{ option.text }}</span>
+        </label>
+      </div>
+
+      <div class="feedback-card" *ngIf="currentAnswerResult">
+        <span class="answer-chip" [class.correct]="currentAnswerResult.isCorrect" [class.wrong]="!currentAnswerResult.isCorrect">
+          {{ currentAnswerResult.isCorrect ? 'Correct' : 'Wrong' }}
+        </span>
+        <p><strong>Your answer:</strong> {{ answerText(currentAnswerResult.selectedAnswer, currentAnswerResult.selectedAnswerText) }}</p>
+        <p><strong>Correct answer:</strong> {{ answerText(currentAnswerResult.correctAnswer, currentAnswerResult.correctAnswerText) }}</p>
+        <p><strong>Explanation:</strong> {{ currentAnswerResult.explanation || 'No explanation available.' }}</p>
+        <p><strong>Feedback:</strong> {{ currentAnswerResult.feedback || 'No feedback available.' }}</p>
+      </div>
+
+      <div class="nav-actions">
+        <span class="nav-note">
+          {{ examCompleted ? 'You can now review all answered questions before opening the result.' : 'You cannot go back to previous questions.' }}
+        </span>
+        <div class="nav-button-group">
+          <button mat-stroked-button type="button" *ngIf="examCompleted" [disabled]="!canGoPrevious" (click)="goPreviousReview()">Previous Question</button>
+          <button mat-stroked-button type="button" *ngIf="examCompleted" [disabled]="!canGoNextReview" (click)="goNextReview()">Next Question</button>
+          <button
+            mat-flat-button
+            color="primary"
+            [disabled]="submitting || (!currentAnswerResult && !selectedAnswer)"
+            (click)="handlePrimaryAction()">
+            {{ actionButtonLabel }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+
+  <ng-template #resultView>
+    <div class="summary-grid">
+      <div class="summary-card">
+        <span class="summary-label">Score</span>
+        <strong>{{ data.totalScore }}/{{ data.totalPossibleScore }}</strong>
+      </div>
+      <div class="summary-card">
+        <span class="summary-label">Correct</span>
+        <strong>{{ data.correctAnswers }}</strong>
+      </div>
+      <div class="summary-card">
+        <span class="summary-label">Wrong</span>
+        <strong>{{ data.wrongAnswers }}</strong>
+      </div>
+      <div class="summary-card summary-card--exp">
+        <span class="summary-label">EXP Earned</span>
+        <strong>+{{ data.experienceGained | number: '1.0-2' }}</strong>
+      </div>
+    </div>
+
+    <div class="overall-feedback">{{ data.overallFeedback }}</div>
+
+    <div class="result-list">
+      <article class="result-card" *ngFor="let answer of data.answers">
+        <div class="result-top">
+          <span class="answer-chip" [class.correct]="answer.isCorrect" [class.wrong]="!answer.isCorrect">
+            {{ answer.isCorrect ? 'Correct' : 'Incorrect' }}
+          </span>
+          <span class="attempt-points">
+            <img class="points-icon" src="assets/points-icon.png" alt="Points" />
+            {{ answer.scoreEarned }} point{{ answer.scoreEarned !== 1 ? 's' : '' }}
+          </span>
+        </div>
+
+        <h3>{{ answer.questionText }}</h3>
+        <p><strong>Your answer:</strong> {{ answerText(answer.selectedAnswer, answer.selectedAnswerText) }}</p>
+        <p><strong>Correct answer:</strong> {{ answerText(answer.correctAnswer, answer.correctAnswerText) }}</p>
+        <p><strong>Time spent:</strong> {{ answer.timeSpentSeconds }} seconds</p>
+        <p><strong>Explanation:</strong> {{ answer.explanation || 'No explanation available.' }}</p>
+        <p><strong>Feedback:</strong> {{ answer.feedback || 'No feedback available.' }}</p>
+      </article>
+    </div>
+  </ng-template>
+</section>
+
+<div class="loading-card" *ngIf="loading">Loading exam attempt...</div>

@@ -1,0 +1,55 @@
+<div class="exam-complete-modal">
+  <button type="button" class="close-button" aria-label="Close" (click)="close()">x</button>
+
+  <div class="hero">
+    <span class="hero__eyebrow">Quest Cleared</span>
+    <h2>{{ subjectName }}</h2>
+    <p>Exam completed successfully</p>
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat-card">
+      <span class="stat-label">Score</span>
+      <strong>{{ totalScore }}/{{ totalPossibleScore }}</strong>
+    </div>
+    <div class="stat-card stat-card--points">
+      <span class="stat-label">Points Earned</span>
+      <strong><img class="stat-icon" src="assets/points-icon.png" alt="Points" />{{ totalScore | number: '1.0-2' }}</strong>
+    </div>
+    <div class="stat-card stat-card--exp">
+      <span class="stat-label">EXP Earned</span>
+      <strong>+{{ experienceGained | number: '1.0-2' }}</strong>
+    </div>
+    <div class="stat-card">
+      <span class="stat-label">Level</span>
+      <strong>{{ studentLevel }}</strong>
+    </div>
+  </div>
+
+  <div class="progress-panel">
+    <div class="progress-panel__meta">
+      <span>Level {{ studentLevel }} Progress</span>
+      <span>{{ currentLevelExperience | number: '1.0-2' }}/{{ nextLevelExperienceRequired | number: '1.0-2' }}</span>
+    </div>
+    <div class="progress-bar">
+      <div
+        class="progress-bar__fill"
+        [style.width.%]="nextLevelExperienceRequired > 0 ? (currentLevelExperience / nextLevelExperienceRequired) * 100 : 0"></div>
+    </div>
+  </div>
+
+  <div class="summary-strip">
+    <span>{{ correctAnswers }} correct</span>
+    <span>{{ wrongAnswers }} wrong</span>
+    <span><img class="summary-icon" src="assets/points-icon.png" alt="Points" />{{ totalScore | number: '1.0-2' }} points earned</span>
+    <span>{{ studentExperiencePoints | number: '1.0-2' }} total EXP</span>
+  </div>
+
+  <div class="feedback-card">
+    {{ overallFeedback }}
+  </div>
+
+  <div class="modal-actions">
+    <button mat-flat-button color="primary" type="button" (click)="openResults()">View Results</button>
+  </div>
+</div>

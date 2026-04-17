@@ -1,0 +1,511 @@
+<div class="admin-page">
+  <div class="admin-header">
+    <h1>Exam Administration</h1>
+    <p>Manage users, subjects, and question banks from one place.</p>
+  </div>
+
+  <section *ngIf="activeSection === 'users'" class="table-stack">
+    <div class="table-card">
+      <div class="section-head">
+        <h2>User Management</h2>
+      </div>
+
+      <div class="testing-panel">
+        <div>
+          <h3>Ranking Badge Test</h3>
+          <p>Temporary admin tool to manually award badges to the current top 1 to 3 students in the live Global board and each live Module board, even before the countdown ends.</p>
+        </div>
+        <button
+          mat-flat-button
+          color="primary"
+          type="button"
+          [disabled]="awardingCurrentRankingBadges"
+          (click)="awardCurrentRankingBadgesForTesting()">
+          {{ awardingCurrentRankingBadges ? 'Awarding...' : 'Award Current Top 3 Badges' }}
+        </button>
+      </div>
+
+      <div class="user-tabs">
+        <button
+          type="button"
+          class="user-tab"
+          [class.active]="selectedUserTab === 'students'"
+          (click)="selectUserTab('students')">
+          Students
+        </button>
+        <button
+          type="button"
+          class="user-tab"
+          [class.active]="selectedUserTab === 'admins'"
+          (click)="selectUserTab('admins')">
+          Admins
+        </button>
+      </div>
+
+      <div class="table-wrap" *ngIf="selectedUserTab === 'students' && loadingStudents">
+        <table class="admin-table admin-table--skeleton">
+          <tbody>
+            <tr *ngFor="let row of [1,2,3,4]">
+              <td><span class="app-skeleton app-skeleton--line" style="width: 160px; display: inline-block;"></span></td>
+              <td><span class="app-skeleton app-skeleton--line" style="width: 90px; display: inline-block;"></span></td>
+              <td><span class="app-skeleton app-skeleton--line" style="width: 180px; display: inline-block;"></span></td>
+              <td><span class="app-skeleton app-skeleton--line" style="width: 80px; display: inline-block;"></span></td>
+              <td><span class="app-skeleton app-skeleton--line" style="width: 120px; height: 36px; display: inline-block;"></span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="table-wrap" *ngIf="selectedUserTab === 'admins' && loadingAdmins">
+        <table class="admin-table admin-table--skeleton">
+          <tbody>
+            <tr *ngFor="let row of [1,2,3]">
+              <td><span class="app-skeleton app-skeleton--line" style="width: 160px; display: inline-block;"></span></td>
+              <td><span class="app-skeleton app-skeleton--line" style="width: 90px; display: inline-block;"></span></td>
+              <td><span class="app-skeleton app-skeleton--line" style="width: 80px; display: inline-block;"></span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="table-wrap" *ngIf="selectedUserTab === 'students' && !loadingStudents">
+        <table mat-table [dataSource]="students" class="admin-table" *ngIf="students.length; else noStudents">
+          <ng-container matColumnDef="name">
+            <th mat-header-cell *matHeaderCellDef>Name</th>
+            <td mat-cell *matCellDef="let user">{{ user.firstName }} {{ user.lastName }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="role">
+            <th mat-header-cell *matHeaderCellDef>Role</th>
+            <td mat-cell *matCellDef="let user">{{ user.role }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="level">
+            <th mat-header-cell *matHeaderCellDef>Level</th>
+            <td mat-cell *matCellDef="let user">
+              <div class="level-cell">
+                <div class="level-badge">
+                  <img class="level-badge__icon" [src]="levelBadge(user.level)" [alt]="'Level ' + user.level + ' badge'" />
+                  <span>Lv. {{ user.level }}</span>
+                </div>
+                <div class="level-progress">
+                  <div class="level-progress__meta">
+                    <span>{{ currentLevelExperience(user) | number: '1.0-2' }}/{{ experienceNeededForNextLevel(user) | number: '1.0-2' }}</span>
+                  </div>
+                  <div class="level-progress__track">
+                    <div class="level-progress__fill" [style.width.%]="experienceProgressPercent(user)"></div>
+                  </div>
+                </div>
+              </div>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="status">
+            <th mat-header-cell *matHeaderCellDef>Status</th>
+            <td mat-cell *matCellDef="let user"><span class="status-chip">{{ user.status || 'N/A' }}</span></td>
+          </ng-container>
+
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef>Actions</th>
+            <td mat-cell *matCellDef="let user">
+              <button
+                mat-stroked-button
+                color="primary"
+                type="button"
+                [disabled]="enablingStreakStudentId === user.id"
+                (click)="enableStudentStreak(user)">
+                {{ enablingStreakStudentId === user.id ? 'Preparing...' : 'Show Streak' }}
+              </button>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+        </table>
+
+        <ng-template #noStudents>
+          <div class="table-state">No student users found.</div>
+        </ng-template>
+      </div>
+
+      <div class="table-wrap" *ngIf="selectedUserTab === 'admins' && !loadingAdmins">
+        <table mat-table [dataSource]="admins" class="admin-table" *ngIf="admins.length; else noAdmins">
+          <ng-container matColumnDef="name">
+            <th mat-header-cell *matHeaderCellDef>Name</th>
+            <td mat-cell *matCellDef="let user">{{ user.firstName }} {{ user.lastName }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="role">
+            <th mat-header-cell *matHeaderCellDef>Role</th>
+            <td mat-cell *matCellDef="let user">{{ user.role }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="status">
+            <th mat-header-cell *matHeaderCellDef>Status</th>
+            <td mat-cell *matCellDef="let user"><span class="status-chip">{{ user.status || 'N/A' }}</span></td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="adminDisplayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: adminDisplayedColumns;"></tr>
+        </table>
+
+        <ng-template #noAdmins>
+          <div class="table-state">No admin users found.</div>
+        </ng-template>
+      </div>
+
+    </div>
+  </section>
+
+  <section *ngIf="showModuleTabs" class="module-management">
+    <nav class="module-tabs" aria-label="Module management tabs">
+      <a class="module-tab-link" routerLink="/Admin/modules" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Modules</a>
+      <a class="module-tab-link" routerLink="/Admin/subjects" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Subjects</a>
+      <a class="module-tab-link" routerLink="/Admin/questions" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Questions</a>
+    </nav>
+
+    <section *ngIf="activeSection === 'modules'" class="admin-grid">
+        <section class="form-card">
+          <div class="section-head">
+            <h2>{{ editingModuleId ? 'Edit Module' : 'Create Module' }}</h2>
+          </div>
+
+          <form [formGroup]="moduleForm" class="admin-form">
+            <mat-form-field appearance="outline">
+              <mat-label>Module Name</mat-label>
+              <input matInput formControlName="name" />
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Description</mat-label>
+              <textarea matInput rows="4" formControlName="description"></textarea>
+            </mat-form-field>
+
+            <label class="toggle-row">
+              <input type="checkbox" formControlName="isActive" />
+              <span>Active</span>
+            </label>
+
+            <div class="form-actions">
+              <button mat-flat-button color="primary" type="button" [disabled]="savingModule" (click)="submitModule()">
+                {{ savingModule ? 'Saving...' : (editingModuleId ? 'Update Module' : 'Add Module') }}
+              </button>
+              <button mat-stroked-button type="button" (click)="resetModuleForm()">Clear</button>
+            </div>
+          </form>
+        </section>
+
+        <section class="list-card">
+          <div class="section-head">
+            <h2>Modules</h2>
+          </div>
+
+          <div class="subject-list" *ngIf="loadingModules">
+            <article class="subject-item" *ngFor="let row of [1,2,3]">
+              <div>
+                <span class="app-skeleton app-skeleton--title" style="width: 150px;"></span>
+                <span class="app-skeleton app-skeleton--line" style="width: 100%; height: 14px; margin-top: 12px; display: block;"></span>
+                <span class="app-skeleton app-skeleton--line" style="width: 180px; height: 14px; margin-top: 10px; display: block;"></span>
+              </div>
+            </article>
+          </div>
+
+          <div class="subject-list" *ngIf="!loadingModules && modules.length">
+            <article class="subject-item" *ngFor="let module of modules">
+              <div>
+                <h3>{{ module.name }}</h3>
+                <p>{{ module.description || 'No description provided.' }}</p>
+                <span class="meta">{{ module.subjectCount }} subjects • {{ module.questionCount }} questions</span>
+              </div>
+
+              <div class="inline-actions">
+                <button mat-stroked-button type="button" (click)="editModule(module)">Edit</button>
+                <button mat-stroked-button color="warn" type="button" (click)="deleteModule(module)">Delete</button>
+              </div>
+            </article>
+          </div>
+
+          <div class="table-state" *ngIf="!loadingModules && !modules.length">No modules created yet.</div>
+        </section>
+    </section>
+
+    <section *ngIf="activeSection === 'subjects'" class="admin-grid">
+        <section class="form-card">
+          <div class="section-head">
+            <h2>{{ editingSubjectId ? 'Edit Subject' : 'Create Subject' }}</h2>
+          </div>
+
+          <form [formGroup]="subjectForm" class="admin-form">
+            <mat-form-field appearance="outline">
+              <mat-label>Module</mat-label>
+              <mat-select formControlName="moduleId">
+                <mat-option *ngFor="let module of modules" [value]="module.id">{{ module.name }}</mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Subject Name</mat-label>
+              <input matInput formControlName="name" />
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Description</mat-label>
+              <textarea matInput rows="4" formControlName="description"></textarea>
+            </mat-form-field>
+
+            <label class="toggle-row">
+              <input type="checkbox" formControlName="isActive" />
+              <span>Active</span>
+            </label>
+
+            <div class="form-actions">
+              <button mat-flat-button color="primary" type="button" [disabled]="savingSubject" (click)="submitSubject()">
+                {{ savingSubject ? 'Saving...' : (editingSubjectId ? 'Update Subject' : 'Add Subject') }}
+              </button>
+              <button mat-stroked-button type="button" (click)="resetSubjectForm()">Clear</button>
+            </div>
+          </form>
+        </section>
+
+        <section class="list-card">
+          <div class="section-head">
+            <h2>Subjects</h2>
+          </div>
+
+          <div class="subject-list" *ngIf="loadingSubjects">
+            <article class="subject-item" *ngFor="let row of [1,2,3]">
+              <div>
+                <span class="app-skeleton app-skeleton--title" style="width: 150px;"></span>
+                <span class="app-skeleton app-skeleton--line" style="width: 100%; height: 14px; margin-top: 12px; display: block;"></span>
+                <span class="app-skeleton app-skeleton--line" style="width: 180px; height: 14px; margin-top: 10px; display: block;"></span>
+              </div>
+            </article>
+          </div>
+
+          <div class="subject-list" *ngIf="!loadingSubjects && subjects.length">
+            <article class="subject-item" *ngFor="let subject of subjects">
+              <div>
+                <h3>{{ subject.name }}</h3>
+                <p>{{ subject.description || 'No description provided.' }}</p>
+                <span class="meta">{{ subject.moduleName }} • {{ subject.questionCount }} questions</span>
+              </div>
+
+              <div class="inline-actions">
+                <button mat-stroked-button type="button" (click)="editSubject(subject)">Edit</button>
+                <button mat-stroked-button color="warn" type="button" (click)="deleteSubject(subject)">Delete</button>
+              </div>
+            </article>
+          </div>
+
+          <div class="table-state" *ngIf="!loadingSubjects && !subjects.length">No subjects created yet.</div>
+        </section>
+    </section>
+
+    <section *ngIf="activeSection === 'questions'" class="admin-grid">
+        <section class="form-card">
+          <div class="section-head">
+            <h2>{{ editingQuestionId ? 'Edit Question' : 'Create Question' }}</h2>
+          </div>
+
+          <form [formGroup]="questionForm" class="admin-form">
+            <mat-form-field appearance="outline">
+              <mat-label>Subject</mat-label>
+              <mat-select formControlName="subjectId">
+                <mat-option *ngFor="let subject of availableSubjectsForSelection" [value]="subject.id">{{ subject.moduleName }} / {{ subject.name }}</mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Question Set</mat-label>
+              <input matInput type="number" min="1" formControlName="questionSetNumber" />
+              <mat-hint>Example: `1`, `2`, `3`</mat-hint>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Question</mat-label>
+              <textarea matInput rows="4" formControlName="questionText"></textarea>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline"><mat-label>Option A</mat-label><input matInput formControlName="optionA" /></mat-form-field>
+            <mat-form-field appearance="outline"><mat-label>Option B</mat-label><input matInput formControlName="optionB" /></mat-form-field>
+            <mat-form-field appearance="outline"><mat-label>Option C</mat-label><input matInput formControlName="optionC" /></mat-form-field>
+            <mat-form-field appearance="outline"><mat-label>Option D</mat-label><input matInput formControlName="optionD" /></mat-form-field>
+
+            <div class="two-col">
+              <mat-form-field appearance="outline">
+                <mat-label>Correct Answer</mat-label>
+                <mat-select formControlName="correctAnswer">
+                  <mat-option value="A">A</mat-option>
+                  <mat-option value="B">B</mat-option>
+                  <mat-option value="C">C</mat-option>
+                  <mat-option value="D">D</mat-option>
+                </mat-select>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Score</mat-label>
+                <input matInput type="number" formControlName="score" />
+              </mat-form-field>
+            </div>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Time Limit in Minutes</mat-label>
+              <input matInput type="number" formControlName="timeLimitSeconds" />
+              <mat-hint>Example: `1` = `1:00`, `2` = `2:00`</mat-hint>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Explanation</mat-label>
+              <textarea matInput rows="3" formControlName="explanation"></textarea>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Default Feedback</mat-label>
+              <textarea matInput rows="3" formControlName="defaultFeedback"></textarea>
+            </mat-form-field>
+
+            <label class="toggle-row">
+              <input type="checkbox" formControlName="isActive" />
+              <span>Active</span>
+            </label>
+
+            <div class="form-actions">
+              <button mat-flat-button color="primary" type="button" [disabled]="savingQuestion" (click)="submitQuestion()">
+                {{ savingQuestion ? 'Saving...' : (editingQuestionId ? 'Update Question' : 'Add Question') }}
+              </button>
+              <button mat-stroked-button type="button" (click)="resetQuestionForm()">Clear</button>
+            </div>
+          </form>
+        </section>
+
+        <section class="list-card">
+          <div class="section-head filter-head">
+            <h2>Question Bank</h2>
+            <div class="inline-actions">
+              <mat-form-field appearance="outline">
+                <mat-label>Filter by module</mat-label>
+                <mat-select [value]="selectedModuleId" (selectionChange)="onModuleFilterChange($event.value)">
+                  <mat-option [value]="0">All modules</mat-option>
+                  <mat-option *ngFor="let module of modules" [value]="module.id">{{ module.name }}</mat-option>
+                </mat-select>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Filter by subject</mat-label>
+                <mat-select [value]="selectedSubjectId" (selectionChange)="onSubjectFilterChange($event.value)">
+                  <mat-option [value]="0">All subjects</mat-option>
+                  <mat-option *ngFor="let subject of availableSubjectsForFilter" [value]="subject.id">{{ subject.name }}</mat-option>
+                </mat-select>
+              </mat-form-field>
+            </div>
+          </div>
+
+          <div class="question-list" *ngIf="loadingQuestions">
+            <article class="question-item" *ngFor="let row of [1,2]">
+              <div class="question-top">
+                <span class="app-skeleton app-skeleton--line" style="width: 160px; height: 28px;"></span>
+                <span class="app-skeleton app-skeleton--line" style="width: 80px; height: 28px;"></span>
+              </div>
+              <span class="app-skeleton app-skeleton--title" style="width: 100%;"></span>
+              <span class="app-skeleton app-skeleton--line" style="width: 88%; height: 14px;"></span>
+              <span class="app-skeleton app-skeleton--line" style="width: 84%; height: 14px;"></span>
+              <span class="app-skeleton app-skeleton--line" style="width: 80%; height: 14px;"></span>
+              <span class="app-skeleton app-skeleton--line" style="width: 76%; height: 14px;"></span>
+            </article>
+          </div>
+
+          <div class="question-list" *ngIf="!loadingQuestions && questions.length">
+            <article class="question-item" *ngFor="let question of questions">
+              <div class="question-top">
+                <span class="subject-pill">{{ question.moduleName }} / {{ question.subjectName }} / Set {{ question.questionSetNumber }}</span>
+                <span class="score-pill">{{ question.score }} pts</span>
+              </div>
+
+              <h3>{{ question.questionText }}</h3>
+              <p class="option-preview">A. {{ question.optionA }}</p>
+              <p class="option-preview">B. {{ question.optionB }}</p>
+              <p class="option-preview">C. {{ question.optionC }}</p>
+              <p class="option-preview">D. {{ question.optionD }}</p>
+              <p class="meta">Correct: {{ question.correctAnswer }} <span *ngIf="question.timeLimitSeconds">• {{ displayTimeLimit(question.timeLimitSeconds) }}</span></p>
+
+              <div class="inline-actions">
+                <button mat-stroked-button type="button" (click)="editQuestion(question)">Edit</button>
+                <button mat-stroked-button color="warn" type="button" (click)="deleteQuestion(question)">Delete</button>
+              </div>
+            </article>
+          </div>
+
+          <div class="table-state" *ngIf="!loadingQuestions && !questions.length">No questions found for this filter.</div>
+        </section>
+    </section>
+  </section>
+
+  <section *ngIf="activeSection === 'performance'" class="admin-grid">
+        <section class="form-card">
+          <div class="section-head">
+            <h2>Filter Performance</h2>
+          </div>
+
+          <div class="admin-form">
+            <mat-form-field appearance="outline">
+              <mat-label>Module</mat-label>
+              <mat-select [value]="selectedPerformanceModuleId" (selectionChange)="onPerformanceModuleFilterChange($event.value)">
+                <mat-option [value]="0">All modules</mat-option>
+                <mat-option *ngFor="let module of modules" [value]="module.id">{{ module.name }}</mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Subject</mat-label>
+              <mat-select [value]="selectedPerformanceSubjectId" (selectionChange)="onPerformanceSubjectFilterChange($event.value)">
+                <mat-option [value]="0">All subjects</mat-option>
+                <mat-option *ngFor="let subject of availablePerformanceSubjects" [value]="subject.id">{{ subject.name }}</mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Student</mat-label>
+              <mat-select [value]="selectedPerformanceStudentId" (selectionChange)="onPerformanceStudentFilterChange($event.value)">
+                <mat-option value="">All students</mat-option>
+                <mat-option *ngFor="let student of students" [value]="student.id">{{ student.firstName }} {{ student.lastName }}</mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+        </section>
+
+        <section class="list-card">
+          <div class="section-head">
+            <h2>Student Scores</h2>
+          </div>
+
+          <div class="performance-list" *ngIf="loadingPerformance">
+            <article class="performance-item" *ngFor="let row of [1,2,3]">
+              <div class="question-top">
+                <span class="app-skeleton app-skeleton--line" style="width: 170px; height: 28px;"></span>
+                <span class="app-skeleton app-skeleton--line" style="width: 100px; height: 28px;"></span>
+              </div>
+              <span class="app-skeleton app-skeleton--title" style="width: 160px;"></span>
+              <span class="app-skeleton app-skeleton--line" style="width: 220px; height: 14px;"></span>
+              <span class="app-skeleton app-skeleton--line" style="width: 250px; height: 14px;"></span>
+              <span class="app-skeleton app-skeleton--line" style="width: 190px; height: 14px;"></span>
+            </article>
+          </div>
+
+          <div class="performance-list" *ngIf="!loadingPerformance && performanceRecords.length">
+            <article class="performance-item" *ngFor="let record of performanceRecords">
+              <div class="question-top">
+                <span class="subject-pill">{{ record.moduleName }} / {{ record.subjectName }} / Set {{ record.questionSetNumber }}</span>
+                <span class="score-pill">{{ record.totalScore }}/{{ record.totalPossibleScore }} pts</span>
+              </div>
+
+              <h3>{{ record.studentName }}</h3>
+              <p>{{ record.studentEmail || 'No email available.' }}</p>
+              <p class="meta">Status: {{ record.status }} • Correct: {{ record.correctAnswers }} • Wrong: {{ record.wrongAnswers }}</p>
+              <p class="meta">Started: {{ record.startedAt | date: 'medium' }}</p>
+              <p class="meta" *ngIf="record.submittedAt">Submitted: {{ record.submittedAt | date: 'medium' }}</p>
+            </article>
+          </div>
+
+          <div class="table-state" *ngIf="!loadingPerformance && !performanceRecords.length">No student scores found for this filter.</div>
+        </section>
+  </section>
+</div>

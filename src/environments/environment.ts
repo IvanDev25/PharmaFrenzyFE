@@ -1,5 +1,5 @@
 export const environment = {
     production: true,
-    appUrl: 'https://localhost:7261',
+    appUrl: 'https://pharmafrenzybe-production.up.railway.app',
     userKey: 'identityAppUser'
 };

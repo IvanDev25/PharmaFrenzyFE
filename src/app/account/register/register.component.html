@@ -1,97 +1,173 @@
-<div style="display: flex; align-items: center; justify-content: center; width: 100%; height: 100%;">
+<div class="register-shell">
+  <div class="register-container">
+    <div class="logo">
+      <div class="logo-circle"></div>
+      <h2>Create Account</h2>
+      <p class="subtitle">Verify your email first, then finish your student profile.</p>
+    </div>
 
-    <div class="register-container">
-        <div class="logo">
-          <div class="logo-circle"></div>
-          <h2>Create Account</h2>
-          <p class="subtitle">Join us today and get started</p>
+    <div class="stepper">
+      <div class="step" [class.active]="currentStep === 'email'" [class.complete]="currentStep !== 'email'">1. Email</div>
+      <div class="step" [class.active]="currentStep === 'otp'" [class.complete]="currentStep === 'details'">2. OTP</div>
+      <div class="step" [class.active]="currentStep === 'details'">3. Details</div>
+    </div>
+
+    <div class="info-box" *ngIf="infoMessage">{{ infoMessage }}</div>
+    <div class="error-list" *ngIf="errorMessages.length">
+      <div *ngFor="let error of errorMessages" class="error-item">{{ error }}</div>
+    </div>
+
+    <form *ngIf="currentStep === 'email'" [formGroup]="emailForm" (ngSubmit)="sendOtp()">
+      <div class="form-group">
+        <label for="email">Email Address</label>
+        <input
+          id="email"
+          type="email"
+          formControlName="email"
+          [class.invalid]="submittedEmail && emailForm.get('email')?.invalid"
+          placeholder="student@email.com"
+        />
+        <div class="error-text" *ngIf="submittedEmail && emailForm.get('email')?.invalid">
+          Enter a valid email address.
         </div>
-      
-        <form [formGroup]="registerForm" (ngSubmit)="register()">
-          <div class="form-row">
-            <div class="form-group" [class.focused]="registerForm.get('firstName')?.touched || registerForm.get('firstName')?.dirty">
-              <label for="firstName">First Name</label>
-              <input
-                type="text"
-                id="firstName"
-                formControlName="firstName"
-                [class.invalid]="submitted && registerForm.get('firstName')?.invalid"
-                required
-              />
-            </div>
-      
-            <div class="form-group" [class.focused]="registerForm.get('lastName')?.touched || registerForm.get('lastName')?.dirty">
-              <label for="lastName">Last Name</label>
-              <input
-                type="text"
-                id="lastName"
-                formControlName="lastName"
-                [class.invalid]="submitted && registerForm.get('lastName')?.invalid"
-                required
-              />
-            </div>
-          </div>
-      
-          <div class="form-group" [class.focused]="registerForm.get('email')?.touched || registerForm.get('email')?.dirty">
-            <label for="email">Email Address</label>
-            <input
-              type="email"
-              id="email"
-              formControlName="email"
-              [class.invalid]="submitted && registerForm.get('email')?.invalid"
-              required
-            />
-          </div>
-      
-          <div class="form-group" [class.focused]="registerForm.get('password')?.touched || registerForm.get('password')?.dirty">
-            <label for="password">Password</label>
-            <input
-              type="password"
-              id="password"
-              formControlName="password"
-              [class.invalid]="submitted && registerForm.get('password')?.invalid"
-              required
-            />
-            <div class="password-strength">
-              <div class="strength-bar">
-                <div
-                class="strength-fill"
-                [ngClass]="passwordStrengthClass"
-                [style.width]="
-                  passwordStrengthClass === 'weak' ? '25%' :
-                  passwordStrengthClass === 'fair' ? '50%' :
-                  passwordStrengthClass === 'good' ? '75%' :
-                  passwordStrengthClass === 'strong' ? '100%' :
-                  '0%'
-                "
-              ></div>
-              
-              </div>
-              <span>{{ passwordStrengthText }}</span>
-            </div>
-          </div>
-      
-          <div class="terms-group">
-            <div class="terms-checkbox">
-              <input type="checkbox" id="terms" formControlName="terms" />
-              <label for="terms">
-                I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>
-              </label>
-            </div>
-            <div *ngIf="submitted && registerForm.get('terms')?.invalid" class="error-text">
-              You must accept the terms.
-            </div>
-          </div>
-      
-          <button type="submit" class="register-btn" [disabled]="registerForm.invalid && submitted">
-            Create Account
-          </button>
-        </form>
-      
-        <div class="login-link">
-            Already have an account? <a routerLink="/account/login">Sign in here</a>
-          </div>          
       </div>
-      
-</div>
 
+      <button type="submit" class="primary-btn" [disabled]="sendingOtp">
+        {{ sendingOtp ? 'Sending OTP...' : 'Send OTP' }}
+      </button>
+    </form>
+
+    <form *ngIf="currentStep === 'otp'" [formGroup]="otpForm" (ngSubmit)="verifyOtp()">
+      <div class="form-group">
+        <label for="otp">Enter OTP</label>
+        <input
+          id="otp"
+          type="text"
+          formControlName="otp"
+          maxlength="6"
+          inputmode="numeric"
+          [class.invalid]="submittedOtp && otpForm.get('otp')?.invalid"
+          placeholder="6-digit code"
+        />
+        <div class="error-text" *ngIf="submittedOtp && otpForm.get('otp')?.invalid">
+          Enter the 6-digit OTP sent to your email.
+        </div>
+      </div>
+
+      <div class="otp-meta">
+        <span>{{ emailForm.get('email')?.value }}</span>
+        <button type="button" class="link-btn" (click)="goBackToEmail()">Change email</button>
+      </div>
+
+      <div class="action-row">
+        <button type="button" class="secondary-btn" (click)="resendOtp()" [disabled]="resendingOtp">
+          {{ resendingOtp ? 'Sending...' : 'Resend OTP' }}
+        </button>
+        <button type="submit" class="primary-btn" [disabled]="verifyingOtp">
+          {{ verifyingOtp ? 'Verifying...' : 'Verify OTP' }}
+        </button>
+      </div>
+    </form>
+
+    <form *ngIf="currentStep === 'details'" [formGroup]="detailsForm" (ngSubmit)="continueToAvatar()">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="firstName">First Name</label>
+          <input
+            id="firstName"
+            type="text"
+            formControlName="firstName"
+            [class.invalid]="submittedDetails && getField('firstName')?.invalid"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="lastName">Last Name</label>
+          <input
+            id="lastName"
+            type="text"
+            formControlName="lastName"
+            [class.invalid]="submittedDetails && getField('lastName')?.invalid"
+          />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="detailsEmail">Email</label>
+        <input id="detailsEmail" type="email" formControlName="email" readonly />
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="phoneNumber">Phone Number</label>
+          <input id="phoneNumber" type="text" formControlName="phoneNumber" placeholder="09xxxxxxxxx" />
+        </div>
+
+        <div class="form-group">
+          <label for="university">University</label>
+          <input
+            id="university"
+            type="text"
+            formControlName="university"
+            [class.invalid]="submittedDetails && getField('university')?.invalid"
+            placeholder="Enter your university"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="gender">Gender</label>
+          <select id="gender" formControlName="gender" [class.invalid]="submittedDetails && getField('gender')?.invalid">
+            <option value="">Select gender</option>
+            <option *ngFor="let option of genderOptions" [value]="option">{{ option }}</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group" *ngIf="detailsForm.get('gender')?.value === 'Other'">
+        <label for="customGender">Your Gender</label>
+        <input
+          id="customGender"
+          type="text"
+          formControlName="customGender"
+          [class.invalid]="submittedDetails && getField('customGender')?.invalid"
+          placeholder="Please specify"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input
+          id="password"
+          type="password"
+          formControlName="password"
+          [class.invalid]="submittedDetails && getField('password')?.invalid"
+        />
+        <div class="password-strength">
+          <div class="strength-bar">
+            <div
+              class="strength-fill"
+              [ngClass]="passwordStrengthClass"
+              [style.width]="
+                passwordStrengthClass === 'weak' ? '25%' :
+                passwordStrengthClass === 'fair' ? '50%' :
+                passwordStrengthClass === 'good' ? '75%' :
+                passwordStrengthClass === 'strong' ? '100%' :
+                '0%'
+              "
+            ></div>
+          </div>
+          <span>{{ passwordStrengthText }}</span>
+        </div>
+      </div>
+
+      <div class="action-row">
+        <button type="button" class="secondary-btn" (click)="currentStep = 'otp'">Back</button>
+        <button type="submit" class="primary-btn">Next</button>
+      </div>
+    </form>
+
+    <div class="login-link">
+      Already have an account? <a routerLink="/account/login">Sign in here</a>
+    </div>
+  </div>
+</div>

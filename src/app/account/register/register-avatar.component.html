@@ -1,0 +1,39 @@
+<div class="avatar-step-shell">
+  <div class="avatar-step-card">
+    <div class="avatar-step-header">
+      <div class="logo-circle"></div>
+      <h2>Select Avatar</h2>
+      <p>Pick the avatar that will appear in your student profile before creating the account.</p>
+    </div>
+
+    <div class="selected-avatar-panel">
+      <img [src]="selectedAvatar" alt="Selected avatar" class="selected-avatar-image" />
+      <div>
+        <span class="selected-avatar-label">Selected Avatar</span>
+        <p>This avatar will be saved to your account and shown in rankings and profile pages.</p>
+      </div>
+    </div>
+
+    <div class="avatar-grid">
+      <button
+        *ngFor="let avatar of avatarOptions"
+        type="button"
+        class="avatar-option"
+        [class.selected]="selectedAvatar === avatar"
+        (click)="selectAvatar(avatar)">
+        <img [src]="avatar" [alt]="'Avatar option ' + avatar" />
+      </button>
+    </div>
+
+    <div class="error-list" *ngIf="errorMessages.length">
+      <div *ngFor="let error of errorMessages" class="error-item">{{ error }}</div>
+    </div>
+
+    <div class="avatar-step-actions">
+      <button type="button" class="secondary-btn" (click)="goBack()">Back</button>
+      <button type="button" class="primary-btn" (click)="createAccount()" [disabled]="creating">
+        {{ creating ? 'Creating Account...' : 'Create Account' }}
+      </button>
+    </div>
+  </div>
+</div>

@@ -15,4 +15,113 @@
 @import url('https://fonts.googleapis.com/css2?family=Anta&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
 
 html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+body {
+  margin: 0;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+  background:
+    radial-gradient(circle at 10% 20%, rgba(255, 209, 102, 0.14), transparent 24%),
+    radial-gradient(circle at 80% 14%, rgba(105, 219, 255, 0.1), transparent 22%),
+    linear-gradient(180deg, #111936 0%, #0a1027 100%);
+  background-attachment: fixed;
+}
+
+:root {
+  --ranking-page-bg:
+    radial-gradient(circle at 10% 20%, rgba(255, 209, 102, 0.14), transparent 24%),
+    radial-gradient(circle at 80% 14%, rgba(105, 219, 255, 0.1), transparent 22%),
+    linear-gradient(180deg, #111936 0%, #0a1027 100%);
+  --student-bg:
+    radial-gradient(circle at top left, rgba(255, 206, 86, 0.32), transparent 28%),
+    radial-gradient(circle at top right, rgba(255, 99, 132, 0.24), transparent 25%),
+    radial-gradient(circle at bottom left, rgba(54, 162, 235, 0.22), transparent 30%),
+    linear-gradient(180deg, #fff7dc 0%, #eef6ff 52%, #f8efff 100%);
+  --student-card: rgba(255, 255, 255, 0.92);
+  --student-card-border: rgba(92, 73, 255, 0.12);
+  --student-text: #1c2354;
+  --student-muted: #5f6b93;
+  --student-pink: #ff5f8f;
+  --student-orange: #ff9f43;
+  --student-yellow: #ffd166;
+  --student-blue: #4b7bff;
+  --student-cyan: #3dd9eb;
+  --student-green: #29c281;
+  --student-shadow: 0 22px 60px rgba(63, 55, 201, 0.14);
+}
+
+body.student-theme {
+  background: var(--student-bg);
+  color: var(--student-text);
+}
+
+.modal-content {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  color: var(--bs-modal-color);
+  pointer-events: auto;
+  background-color: transparent;
+  background-clip: padding-box;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  outline: 0;
+}
+
+.app-skeleton {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(90deg, #e4e7eb 0%, #f2f4f7 50%, #e4e7eb 100%);
+  background-size: 220% 100%;
+  animation: app-skeleton-shimmer 1.4s ease-in-out infinite;
+}
+
+.app-skeleton--line {
+  display: block;
+  height: 12px;
+  border-radius: 999px;
+}
+
+.app-skeleton--title {
+  display: block;
+  height: 22px;
+  border-radius: 10px;
+}
+
+.app-skeleton--circle {
+  border-radius: 50%;
+}
+
+@keyframes app-skeleton-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -20% 0;
+  }
+}
+
+/* Team Form Modal Dialog Styling */
+::ng-deep .team-form-modal {
+  .mat-mdc-dialog-container {
+    padding: 0 !important;
+    overflow: hidden;
+  }
+  
+  .mat-mdc-dialog-surface {
+    overflow: hidden;
+  }
+}
+
+/* Check Registration Modal Dialog Styling */
+::ng-deep .check-registration-modal {
+  .mat-mdc-dialog-container {
+    padding: 0 !important;
+    overflow: hidden;
+  }
+  
+  .mat-mdc-dialog-surface {
+    overflow: hidden;
+  }
+}

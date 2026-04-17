@@ -1,12 +1,22 @@
-<div class="modal-header" [ngClass]="{'bg-success': isSuccess, 'bg-danger': !isSuccess}">
-    <h4 class="modal-title pull-left">{{ title }}</h4>
-    <button type="button" class="btn-close close pull-right" aria-label="Close" (click)="bsModalRef.hide()">
-      <span aria-hidden="true" class="visually-hidden">&times;</span>
-    </button>
+<div class="game-notification" [class.is-error]="!isSuccess">
+  <button type="button" class="game-notification__close" aria-label="Close" (click)="bsModalRef.hide()">x</button>
+
+  <div class="game-notification__hero">
+    <div class="game-notification__icon-wrap">
+      <img
+        class="game-notification__icon"
+        [src]="isSuccess ? 'assets/RxWallet.png' : 'assets/points-icon.png'"
+        [alt]="isSuccess ? 'Success' : 'Error'" />
+    </div>
+
+    <div class="game-notification__copy">
+      <span class="game-notification__eyebrow">{{ isSuccess ? 'Success' : 'Notice' }}</span>
+      <h2>{{ title }}</h2>
+      <p>{{ message }}</p>
+    </div>
   </div>
-  <div class="modal-body">
-    {{message}}
+
+  <div class="game-notification__footer">
+    <button type="button" class="game-notification__button" (click)="bsModalRef.hide()">OK</button>
   </div>
-  <div class="modal-footer">
-    <button type="button" class="btn btn-default" (click)="bsModalRef.hide()">Ok</button>
-  </div>
+</div>

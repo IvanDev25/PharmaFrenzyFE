@@ -3,7 +3,6 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { take } from 'rxjs';
 import { User } from 'src/app/shared/models/account/user';
-import { SharedService } from 'src/app/shared/shared.service';
 import { AccountService } from '../account.service';
 
 @Component({
@@ -12,6 +11,7 @@ import { AccountService } from '../account.service';
   styleUrls: ['./login.component.scss']
 })
 export class LoginComponent implements OnInit{
+  private readonly studentWelcomeStorageKey = 'show-student-home-welcome';
   loginForm : FormGroup = new FormGroup({});
   submitted = false;
   errorMessages: string[] = [];
@@ -54,12 +54,12 @@ export class LoginComponent implements OnInit{
 
         if (this.loginForm.valid) {
           this.accountService.login(this.loginForm.value).subscribe({
-            next: (response: any) => {
-              if (this.returnUrl) {
-                this.router.navigateByUrl(this.returnUrl);
-              }else {
-                this.router.navigateByUrl('/');
+            next: (response: User | null) => {
+              if (response?.role === 'Student') {
+                sessionStorage.setItem(this.studentWelcomeStorageKey, 'true');
               }
+
+              this.finishLoginNavigation(response);
             },
             error: error => {
               if (error.error.errors) {
@@ -72,6 +72,25 @@ export class LoginComponent implements OnInit{
 
       }
   } 
+
+  private finishLoginNavigation(response: User | null): void {
+    if (this.returnUrl) {
+      const jwt = response?.jwt ?? this.accountService.getJWT();
+      if (this.returnUrl.startsWith('http://') || this.returnUrl.startsWith('https://')) {
+        const separator = this.returnUrl.includes('?') ? '&' : '?';
+        const targetUrl = jwt
+          ? `${this.returnUrl}${separator}swaggerToken=${encodeURIComponent(jwt)}`
+          : this.returnUrl;
+        window.location.href = targetUrl;
+        return;
+      }
+
+      this.router.navigateByUrl(this.returnUrl);
+      return;
+    }
+
+    this.router.navigateByUrl(response?.role === 'Student' ? '/exams' : '/');
+  }
 
   resendEmailConfirmationLink(){
     this.router.navigateByUrl('account/send-email/resend-email-confirmation-link');

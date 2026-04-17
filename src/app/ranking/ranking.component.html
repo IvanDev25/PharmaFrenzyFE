@@ -1,0 +1,269 @@
+
+
+
+
+
+<section class="ranking-shell">
+  <section class="page-navbar">
+    <app-navbar [forceShow]="true"></app-navbar>
+  </section>
+  <div class="ranking-hero">
+    <div class="hero-copy">
+      <p class="eyebrow">Student Leaderboard</p>
+      <h1>Climb the rankings through your exam points.</h1>
+      <p class="hero-text">
+        Your real student points stay on your account. Only the leaderboard scores reset: monthly for global ranking and weekly for each module board.
+      </p>
+    </div>
+
+    <div class="hero-score">
+      <span class="score-label">My Total Points</span>
+      <strong>{{ (globalRanking?.currentStudentPoints ?? currentUser?.totalPoints ?? 0) | number: '1.1-2' }}</strong>
+      <span class="score-caption">Keep answering correctly to move up.</span>
+    </div>
+  </div>
+
+  <mat-tab-group class="ranking-tabs">
+    <mat-tab label="Global Ranking">
+      <div class="board-shell">
+        <div class="summary-card" *ngIf="globalRanking as board">
+          <div>
+            <p class="card-label">My Global Rank</p>
+            <h2>{{ board.currentStudentRank || '-' }}</h2>
+          </div>
+          <div>
+            <p class="card-label">{{ periodPointsLabel(board) }}</p>
+            <h2>{{ board.currentStudentPoints | number: '1.1-2' }}</h2>
+          </div>
+        </div>
+
+        <div class="leaderboard-card leaderboard-card--skeleton" *ngIf="loadingGlobal">
+          <div class="board-header">
+            <div class="board-heading">
+              <span class="app-skeleton app-skeleton--line" style="width: 110px;"></span>
+              <span class="app-skeleton app-skeleton--title" style="width: 220px; margin-top: 10px;"></span>
+            </div>
+            <div class="reset-banner reset-banner--header">
+              <span class="app-skeleton app-skeleton--title" style="width: 170px;"></span>
+            </div>
+          </div>
+
+          <div class="board-table">
+            <div class="board-row board-row--head">
+              <span>Pos.</span>
+              <span>Student</span>
+              <span>Points</span>
+            </div>
+
+            <div class="board-row" *ngFor="let row of [1,2,3,4]">
+              <span class="rank-value"><span class="app-skeleton app-skeleton--circle" style="width: 52px; height: 52px; display: inline-block;"></span></span>
+              <span class="student-cell">
+                <span class="app-skeleton app-skeleton--circle student-image" style="display: inline-block;"></span>
+                <span class="student-copy" style="gap: 8px;">
+                  <span class="app-skeleton app-skeleton--line" style="width: 160px;"></span>
+                  <span class="app-skeleton app-skeleton--line" style="width: 120px;"></span>
+                </span>
+              </span>
+              <span class="points"><span class="app-skeleton app-skeleton--line" style="width: 72px; display: inline-block;"></span></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="leaderboard-card" *ngIf="!loadingGlobal && globalRanking as board">
+          <div class="board-header">
+            <div class="board-heading">
+              <p class="eyebrow">Leaderboard</p>
+              <h2>Global Ranking</h2>
+            </div>
+            <div class="reset-banner reset-banner--header">
+              <span class="reset-banner__timer">{{ countdownText(board) }}</span>
+              <span class="reset-banner__copy">{{ board.periodLabel }} - Resets on {{ resetDateText(board) }}</span>
+            </div>
+          </div>
+
+          <div class="board-rewards">
+            <p class="eyebrow">Global Ranking Rewards</p>
+            <div class="reward-row">
+              <strong>Top 1</strong>
+              <span class="reward-value"><img class="reward-value__icon" src="assets/RxCoin.png" alt="RxCoin" />20 RxCoin <img class="reward-value__icon" src="assets/points-icon.png" alt="Points" />30 Points</span>
+            </div>
+            <div class="reward-row">
+              <strong>Top 2</strong>
+              <span class="reward-value"><img class="reward-value__icon" src="assets/RxCoin.png" alt="RxCoin" />10 RxCoin <img class="reward-value__icon" src="assets/points-icon.png" alt="Points" />15 Points</span>
+            </div>
+            <div class="reward-row">
+              <strong>Top 3</strong>
+              <span class="reward-value"><img class="reward-value__icon" src="assets/RxCoin.png" alt="RxCoin" />5 RxCoin <img class="reward-value__icon" src="assets/points-icon.png" alt="Points" />7 Points</span>
+            </div>
+          </div>
+
+          <div class="board-table" *ngIf="board.entries.length; else emptyGlobal">
+            <div class="board-row board-row--head">
+              <span>Pos.</span>
+              <span>Student</span>
+              <span>Points</span>
+            </div>
+
+            <div
+              class="board-row"
+              *ngFor="let entry of board.entries; trackBy: trackByStudent"
+              [class.is-me]="entry.isCurrentStudent">
+              <span
+                class="rank-value"
+                [class.rank-value--gold]="entry.rank === 1"
+                [class.rank-value--silver]="entry.rank === 2"
+                [class.rank-value--bronze]="entry.rank === 3">
+                <img
+                  *ngIf="globalRankBadge(entry.rank) as badge; else globalRankText"
+                  class="rank-badge-image"
+                  [src]="badge"
+                  [alt]="'Global rank ' + entry.rank" />
+                <ng-template #globalRankText>#{{ entry.rank }}</ng-template>
+              </span>
+              <span class="student-cell">
+                <img *ngIf="entry.image" class="student-image" [src]="entry.image" [alt]="entry.studentName + ' avatar'" />
+                <span class="student-copy">
+                  <span class="student-copy__topline">
+                    <img class="student-level-badge" [src]="levelBadge(entry.level)" [alt]="'Level ' + entry.level + ' badge'" />
+                    <strong>{{ entry.studentName }}</strong>
+                  </span>
+                  <small>{{ entry.university || 'No university' }}</small>
+                </span>
+              </span>
+              <span class="points">{{ entry.points | number: '1.1-2' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <ng-template #emptyGlobal>
+          <div class="board-state">No rankings available yet.</div>
+        </ng-template>
+      </div>
+    </mat-tab>
+
+    <mat-tab label="Ranking Per Module">
+      <div class="board-shell">
+        <div class="module-toolbar">
+          <mat-form-field appearance="outline">
+            <mat-label>Select module</mat-label>
+            <mat-select [value]="selectedModuleId" (selectionChange)="onModuleChange($event.value)">
+              <mat-option *ngFor="let module of modules" [value]="module.id">{{ module.name }}</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <div class="board-state" *ngIf="loadingModules">
+          <span class="app-skeleton app-skeleton--title" style="width: 240px; display: inline-block;"></span>
+        </div>
+        <div class="leaderboard-card leaderboard-card--skeleton" *ngIf="!loadingModules && loadingModuleRanking">
+          <div class="board-header">
+            <div class="board-heading">
+              <span class="app-skeleton app-skeleton--line" style="width: 110px;"></span>
+              <span class="app-skeleton app-skeleton--title" style="width: 240px; margin-top: 10px;"></span>
+            </div>
+          </div>
+
+          <div class="board-table">
+            <div class="board-row board-row--head">
+              <span>Pos.</span>
+              <span>Student</span>
+              <span>Points</span>
+            </div>
+
+            <div class="board-row" *ngFor="let row of [1,2,3,4]">
+              <span class="rank-value"><span class="app-skeleton app-skeleton--circle" style="width: 52px; height: 52px; display: inline-block;"></span></span>
+              <span class="student-cell">
+                <span class="app-skeleton app-skeleton--circle student-image" style="display: inline-block;"></span>
+                <span class="student-copy" style="gap: 8px;">
+                  <span class="app-skeleton app-skeleton--line" style="width: 160px;"></span>
+                  <span class="app-skeleton app-skeleton--line" style="width: 120px;"></span>
+                </span>
+              </span>
+              <span class="points"><span class="app-skeleton app-skeleton--line" style="width: 72px; display: inline-block;"></span></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="leaderboard-card" *ngIf="!loadingModules && !loadingModuleRanking && moduleRanking as board">
+          <div class="board-header">
+            <div class="board-heading">
+              <p class="eyebrow">Module Board</p>
+              <h2>{{ board.moduleName }}</h2>
+            </div>
+            <div class="reset-banner reset-banner--header reset-banner--module-header">
+              <span class="reset-banner__timer">{{ countdownText(board) }}</span>
+              <span class="reset-banner__copy">{{ board.periodLabel }} - Resets on {{ resetDateText(board) }}</span>
+            </div>
+            <div class="board-metrics board-metrics--module">
+              <div class="board-metric">
+                <span class="card-label">My Module Rank</span>
+                <strong>{{ board.currentStudentRank || '-' }}</strong>
+              </div>
+              <div class="board-metric">
+                <span class="card-label">{{ periodPointsLabel(board) }}</span>
+                <strong>{{ board.currentStudentPoints | number: '1.1-2' }}</strong>
+              </div>
+            </div>
+          </div>
+
+          <div class="board-rewards board-rewards--module">
+            <p class="eyebrow">Module Ranking Rewards</p>
+            <div class="reward-row">
+              <strong>Top 1</strong>
+              <span class="reward-value"><img class="reward-value__icon" src="assets/RxCoin.png" alt="RxCoin" />10 RxCoin <img class="reward-value__icon" src="assets/points-icon.png" alt="Points" />15 Points</span>
+            </div>
+            <div class="reward-row">
+              <strong>Top 2</strong>
+              <span class="reward-value"><img class="reward-value__icon" src="assets/RxCoin.png" alt="RxCoin" />5 RxCoin <img class="reward-value__icon" src="assets/points-icon.png" alt="Points" />7 Points</span>
+            </div>
+            <div class="reward-row">
+              <strong>Top 3</strong>
+              <span class="reward-value"><img class="reward-value__icon" src="assets/RxCoin.png" alt="RxCoin" />2.5 RxCoin <img class="reward-value__icon" src="assets/points-icon.png" alt="Points" />3.5 Points</span>
+            </div>
+          </div>
+
+          <div class="board-table" *ngIf="board.entries.length; else emptyModule">
+            <div class="board-row board-row--head">
+              <span>Pos.</span>
+              <span>Student</span>
+              <span>Points</span>
+            </div>
+
+            <div
+              class="board-row"
+              *ngFor="let entry of board.entries; trackBy: trackByStudent"
+              [class.is-me]="entry.isCurrentStudent">
+              <span
+                class="rank-value"
+                [class.rank-value--gold]="entry.rank === 1"
+                [class.rank-value--silver]="entry.rank === 2"
+                [class.rank-value--bronze]="entry.rank === 3">
+                <img
+                  *ngIf="moduleRankBadge(entry.rank) as badge; else moduleRankText"
+                  class="rank-badge-image"
+                  [src]="badge"
+                  [alt]="'Module rank ' + entry.rank" />
+                <ng-template #moduleRankText>#{{ entry.rank }}</ng-template>
+              </span>
+              <span class="student-cell">
+                <img *ngIf="entry.image" class="student-image" [src]="entry.image" [alt]="entry.studentName + ' avatar'" />
+                <span class="student-copy">
+                  <span class="student-copy__topline">
+                    <img class="student-level-badge" [src]="levelBadge(entry.level)" [alt]="'Level ' + entry.level + ' badge'" />
+                    <strong>{{ entry.studentName }}</strong>
+                  </span>
+                  <small>{{ entry.university || 'No university' }}</small>
+                </span>
+              </span>
+              <span class="points">{{ entry.points | number: '1.1-2' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <ng-template #emptyModule>
+          <div class="board-state">No module rankings available yet.</div>
+        </ng-template>
+      </div>
+    </mat-tab>
+  </mat-tab-group>
+</section>

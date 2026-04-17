@@ -1,0 +1,229 @@
+<section class="exam-shell">
+  <section class="page-navbar">
+    <app-navbar [forceShow]="true"></app-navbar>
+  </section>
+  <div class="welcome-overlay" *ngIf="showStudentWelcome">
+    <div class="welcome-card">
+      <div class="streak-flame" aria-hidden="true">
+        <span>{{ dailyStreakStatus?.currentStreak || 1 }}</span>
+      </div>
+      <p class="streak-kicker">Daily Reward</p>
+      <h3>{{ dailyStreakStatus?.currentStreak || 1 }} Day Streak!</h3>
+      <p class="streak-copy">
+        <ng-container *ngIf="dailyStreakStatus?.canRedeemToday; else redeemedCopy">
+          Your {{ dailyStreakStatus?.currentLocalDate | date: 'MMMM d' }} streak reward is ready.
+          Redeem <strong>{{ (dailyStreakStatus?.rewardPoints ?? 0) | number: '1.1-2' }}</strong> points now.
+        </ng-container>
+        <ng-template #redeemedCopy>
+          Your {{ dailyStreakStatus?.currentLocalDate | date: 'MMMM d' }} streak reward has been claimed.
+          Come back tomorrow for the next bonus.
+        </ng-template>
+      </p>
+      <p class="streak-status" *ngIf="dailyStreakStatus && !dailyStreakStatus.canRedeemToday">Redeemed</p>
+      <div class="streak-days" aria-hidden="true">
+        <span
+          *ngFor="let label of streakDayLabels; let i = index"
+          [class.is-claimed]="isClaimedStreakDay(i)"
+          [class.is-current]="isCurrentRedeemableDay(i)">
+          {{ label }}
+        </span>
+      </div>
+      <button
+        type="button"
+        class="welcome-btn"
+        [disabled]="redeemingDailyStreak"
+        (click)="dailyStreakStatus?.canRedeemToday ? redeemDailyStreak() : closeStudentWelcome()">
+        {{
+          redeemingDailyStreak
+            ? 'Redeeming...'
+            : (dailyStreakStatus?.canRedeemToday ? 'Continue' : 'Done')
+        }}
+      </button>
+    </div>
+  </div>
+
+  <div class="hero-card">
+    <div>
+      <p class="eyebrow">Computer-Based Exam System</p>
+      <h1>Choose a module, then open its subjects.</h1>
+      <p class="lead">Start from a module first. When you click view, you will see all subjects under that module and can begin or continue an exam from there.</p>
+      <div class="hero-badges">
+        <span>Playful quiz mode</span>
+        <span>Track your score</span>
+        <span>Continue anytime</span>
+      </div>
+    </div>
+
+    <div class="hero-actions">
+      <button mat-raised-button color="primary" (click)="openHistory()">View My History</button>
+    </div>
+  </div>
+
+  <div class="module-grid" *ngIf="loading">
+    <article class="module-card" *ngFor="let card of [1,2,3]">
+      <div class="module-top">
+        <span class="app-skeleton app-skeleton--line" style="width: 80px;"></span>
+        <span class="app-skeleton app-skeleton--line" style="width: 96px; height: 30px;"></span>
+      </div>
+
+      <span class="app-skeleton app-skeleton--title" style="width: 180px;"></span>
+      <span class="app-skeleton app-skeleton--line" style="width: 100%; height: 14px;"></span>
+      <span class="app-skeleton app-skeleton--line" style="width: 72%; height: 14px;"></span>
+
+      <div class="subject-meta">
+        <span class="app-skeleton app-skeleton--line" style="width: 120px;"></span>
+        <span class="app-skeleton app-skeleton--line" style="width: 120px;"></span>
+      </div>
+
+      <div class="module-progress">
+        <div class="module-progress-top">
+          <span class="app-skeleton app-skeleton--line" style="width: 80px;"></span>
+          <span class="app-skeleton app-skeleton--line" style="width: 52px;"></span>
+        </div>
+        <div class="module-progress-content">
+          <div class="module-progress-chart app-skeleton app-skeleton--circle" style="background: linear-gradient(90deg, #eef3f8 0%, #f7fafd 50%, #eef3f8 100%);"></div>
+          <span class="app-skeleton app-skeleton--line" style="width: 170px;"></span>
+        </div>
+      </div>
+
+      <div class="subject-footer">
+        <span class="app-skeleton app-skeleton--line" style="width: 110px; height: 30px;"></span>
+        <span class="app-skeleton app-skeleton--line" style="width: 120px; height: 40px;"></span>
+      </div>
+    </article>
+  </div>
+
+  <div class="module-grid" *ngIf="!loading && modules.length && !viewedModule">
+    <article class="module-card" *ngFor="let module of modules; trackBy: trackByModule">
+      <div class="module-top">
+        <p class="subject-label">Module</p>
+        <span class="question-badge">{{ module.subjectCount }} subjects</span>
+      </div>
+
+      <h2>{{ module.name }}</h2>
+      <p class="subject-description">{{ module.description || 'No description added yet.' }}</p>
+
+      <div class="subject-meta">
+        <span>{{ module.questionCount }} questions total</span>
+        <span>Updated {{ module.updatedAt | date: 'mediumDate' }}</span>
+      </div>
+
+      <div class="module-progress" *ngIf="getModuleProgress(module.id) as progress">
+        <div class="module-progress-top">
+          <span class="module-progress-label">Progress</span>
+          <span class="module-progress-value">{{ progress.completedSets }}/{{ progress.totalSets || 0 }}</span>
+        </div>
+        <div class="module-progress-content">
+          <div class="module-progress-chart" [style.--progress]="progress.percentage" aria-hidden="true">
+            <div class="module-progress-chart-inner">
+              <span class="module-progress-chart-number">{{ progress.percentage }}%</span>
+            </div>
+          </div>
+          <p class="module-progress-text">
+            {{ progress.completedSets }} of {{ progress.totalSets }} set{{ progress.totalSets !== 1 ? 's' : '' }} perfected
+          </p>
+        </div>
+      </div>
+
+      <div class="subject-footer">
+        <span class="play-chip">{{ viewedModuleId === module.id ? 'Subjects opened' : 'Open this module' }}</span>
+
+        <button
+          mat-flat-button
+          color="primary"
+          (click)="viewModule(module.id)">
+          {{ moduleButtonLabel(module.id) }}
+        </button>
+      </div>
+    </article>
+  </div>
+
+  <section class="module-panel" *ngIf="!loading && viewedModule as module">
+    <div class="module-panel-header">
+      <div>
+        <p class="eyebrow">Selected Module</p>
+        <h2>{{ module.name }}</h2>
+        <p>{{ module.description || 'Choose a subject below to begin your exam.' }}</p>
+      </div>
+      <div class="module-panel-actions">
+        <span class="question-badge">{{ viewedSubjects.length }} subject{{ viewedSubjects.length !== 1 ? 's' : '' }}</span>
+        <button mat-stroked-button type="button" (click)="viewModule(module.id)">Back to Modules</button>
+      </div>
+    </div>
+
+    <div class="subject-grid" *ngIf="viewedSubjects.length; else noViewedSubjects">
+      <article class="subject-card" *ngFor="let subject of viewedSubjects; trackBy: trackBySubject">
+        <div class="subject-top">
+          <p class="subject-label">{{ subject.moduleName }}</p>
+          <span class="question-badge">{{ subject.setCount }} set{{ subject.setCount !== 1 ? 's' : '' }}</span>
+        </div>
+
+        <h2>{{ subject.name }}</h2>
+        <p class="subject-description">{{ subject.description || 'No description added yet.' }}</p>
+
+        <div class="subject-meta">
+          <span>{{ subject.questionCount }} total questions</span>
+          <span class="subject-meta-separator">•</span>
+          <span>Updated {{ subject.updatedAt | date: 'mediumDate' }}</span>
+        </div>
+
+        <div class="set-list" *ngIf="subject.questionSets.length; else noQuestionSets">
+          <article class="set-card" *ngFor="let questionSet of subject.questionSets; trackBy: trackByQuestionSet" [class.locked]="isSetLocked(subject, questionSet.questionSetNumber)">
+            <div class="set-card-top">
+              <div>
+                <p class="set-title">Set {{ questionSet.questionSetNumber }}</p>
+                <p class="set-copy">{{ questionSet.questionCount }} / 20 questions</p>
+              </div>
+              <span
+                class="set-status"
+                [class.locked]="isSetLocked(subject, questionSet.questionSetNumber)"
+                [class.done]="isSetPerfected(subject.id, questionSet.questionSetNumber)"
+                [class.progress]="hasInProgressAttempt(subject.id, questionSet.questionSetNumber)">
+                {{ questionSetStatusLabel(subject, questionSet.questionSetNumber) }}
+              </span>
+            </div>
+
+            <p class="set-last-score" *ngIf="latestSubmittedAttempt(subject.id, questionSet.questionSetNumber) as latestAttempt; else noSetAttempt">
+              Last score: {{ latestAttempt.totalScore }}/{{ latestAttempt.totalPossibleScore }}
+            </p>
+            <ng-template #noSetAttempt>
+              <p class="set-last-score">No submitted attempt yet.</p>
+            </ng-template>
+
+            <div class="subject-footer">
+              <span class="play-chip">
+                {{
+                  isSetLocked(subject, questionSet.questionSetNumber)
+                    ? lockedSetMessage(subject, questionSet.questionSetNumber)
+                    : isSetPerfected(subject.id, questionSet.questionSetNumber)
+                    ? 'Perfect score reached. You can retake.'
+                    : (hasInProgressAttempt(subject.id, questionSet.questionSetNumber) ? 'Resume your current run' : 'Ready to start')
+                }}
+              </span>
+
+              <button
+                mat-flat-button
+                color="primary"
+                [disabled]="isStartingSet(subject.id, questionSet.questionSetNumber) || isSetLocked(subject, questionSet.questionSetNumber)"
+                (click)="startExam(subject.id, questionSet.questionSetNumber)">
+                {{ examButtonLabel(subject, questionSet.questionSetNumber) }}
+              </button>
+            </div>
+          </article>
+        </div>
+
+        <ng-template #noQuestionSets>
+          <div class="state-card compact-state">No question sets are available for this subject yet.</div>
+        </ng-template>
+      </article>
+    </div>
+
+    <ng-template #noViewedSubjects>
+      <div class="state-card compact-state">No active subjects are available under this module yet.</div>
+    </ng-template>
+  </section>
+
+  <div class="state-card" *ngIf="!loading && !modules.length">
+    No active modules are available yet.
+  </div>
+</section>

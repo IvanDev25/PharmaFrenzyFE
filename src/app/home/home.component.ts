@@ -1,6 +1,11 @@
-import { Component, ElementRef, HostListener, inject, OnDestroy, OnInit, Renderer2 } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
-import { TeamFormModalComponent } from '../team-form-modal/team-form-modal.component';
+import { Component, ElementRef, HostListener, OnDestroy, OnInit, Renderer2, AfterViewInit } from '@angular/core';
+import { take } from 'rxjs';
+import { Router } from '@angular/router';
+import { AccountService } from '../account/account.service';
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+gsap.registerPlugin(ScrollTrigger);
 
 interface SportEvent {
   date: string;
@@ -32,16 +37,14 @@ interface SportCategory {
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss']
 })
-export class HomeComponent implements OnInit, OnDestroy {
-
-  private particleInterval: any;
-  readonly dialog = inject(MatDialog);
+export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
+  showBackToTop = false;
 
   // Calendar properties
   currentDate = new Date();
-  currentMonth = this.currentDate.getMonth();
-  currentYear = this.currentDate.getFullYear();
-  eventDays = [8, 15, 22, 30]; // Days with events in June
+  currentMonth = 5; // June (0-indexed, so 5 = June)
+  currentYear = 2026;
+  eventDays = [1, 2]; // Days with events in June
   dayHeaders = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   monthNames = ["January", "February", "March", "April", "May", "June",
     "July", "August", "September", "October", "November", "December"];
@@ -49,22 +52,16 @@ export class HomeComponent implements OnInit, OnDestroy {
   // Data properties
   upcomingEvents: SportEvent[] = [
     {
-      date: 'June 15, 2025',
-      title: 'Championship Finals',
-      description: 'The ultimate showdown between the top two teams of the season. Don\'t miss this thrilling match!',
-      location: 'Central Sports Arena'
+      date: 'June 1, 2026',
+      title: 'Love Boracay 2026',
+      description: 'Maya\'s Boracay, Station 1, White Beach, Boracay Island',
+      location: 'Maya\'s Boracay, Station 1, White Beach, Boracay Island'
     },
     {
-      date: 'June 22, 2025',
-      title: 'Summer League Kickoff',
-      description: 'Start of the exciting summer league with 16 teams competing for glory.',
-      location: 'Riverside Stadium'
-    },
-    {
-      date: 'June 30, 2025',
-      title: 'Youth Tournament',
-      description: 'Young talents showcase their skills in this competitive youth tournament.',
-      location: 'Community Sports Center'
+      date: 'June 2, 2026',
+      title: 'Love Boracay 2026',
+      description: 'Maya\'s Boracay, Station 1, White Beach, Boracay Island',
+      location: 'Maya\'s Boracay, Station 1, White Beach, Boracay Island'
     }
   ];
 
@@ -108,38 +105,271 @@ export class HomeComponent implements OnInit, OnDestroy {
     { logo: '🎾', name: 'Tennis', sport: 'Precision and power' }
   ];
 
-  constructor(private elementRef: ElementRef, private renderer: Renderer2) {}
+  constructor(
+    private elementRef: ElementRef,
+    private renderer: Renderer2,
+    private accountService: AccountService,
+    private router: Router
+  ) {}
 
   ngOnInit() {
-    this.handleScrollAnimations();
-    this.startParticleAnimation();
+    this.accountService.user$.pipe(take(1)).subscribe(user => {
+      if (user?.role === 'Student') {
+        this.router.navigateByUrl('/exams');
+      }
+    });
+
     this.setupInteractiveEffects();
-    
-    // Initial scroll animation check
-    setTimeout(() => {
-      this.handleScrollAnimations();
-    }, 100);
   }
 
-  ngOnDestroy() {
-    if (this.particleInterval) {
-      clearInterval(this.particleInterval);
-    }
+  @HostListener('window:scroll', [])
+  onWindowScroll() {
+    // Show/hide back to top button based on scroll position
+    const scrollPosition = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+    this.showBackToTop = scrollPosition > 300;
   }
 
-  openDialog() {
-    const dialogRef = this.dialog.open(TeamFormModalComponent);
-
-    dialogRef.afterClosed().subscribe(result => {
-      console.log(`Dialog result: ${result}`);
+  scrollToTop() {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
     });
   }
 
-  @HostListener('window:scroll', ['$event'])
-  onWindowScroll() {
-    this.handleScrollAnimations();
-    this.handleHeaderScroll();
-    this.handleParallax();
+  ngAfterViewInit() {
+    this.initScrollAnimations();
+  }
+
+  ngOnDestroy() {
+    // Kill all ScrollTrigger instances
+    ScrollTrigger.getAll().forEach(trigger => trigger.kill());
+  }
+
+  private initScrollAnimations() {
+    // Hero section animation
+    gsap.fromTo('.hero-content h1', 
+      { opacity: 0, y: 50 },
+      {
+        scrollTrigger: {
+          trigger: '.hero',
+          start: 'top 80%',
+          toggleActions: 'play reverse play reverse'
+        },
+        opacity: 1,
+        y: 0,
+        duration: 1,
+        ease: 'power3.out'
+      }
+    );
+
+    gsap.fromTo('.hero-content p',
+      { opacity: 0, y: 30 },
+      {
+        scrollTrigger: {
+          trigger: '.hero',
+          start: 'top 80%',
+          toggleActions: 'play reverse play reverse'
+        },
+        opacity: 1,
+        y: 0,
+        duration: 1,
+        delay: 0.2,
+        ease: 'power3.out'
+      }
+    );
+
+    gsap.fromTo('.cta-buttons',
+      { opacity: 0, y: 30 },
+      {
+        scrollTrigger: {
+          trigger: '.hero',
+          start: 'top 80%',
+          toggleActions: 'play reverse play reverse'
+        },
+        opacity: 1,
+        y: 0,
+        duration: 1,
+        delay: 0.4,
+        ease: 'power3.out'
+      }
+    );
+
+    // Events section animation
+    gsap.fromTo('.events-section',
+      { opacity: 0, y: 50 },
+      {
+        scrollTrigger: {
+          trigger: '.events-section',
+          start: 'top 80%',
+          toggleActions: 'play reverse play reverse'
+        },
+        opacity: 1,
+        y: 0,
+        duration: 1,
+        ease: 'power3.out'
+      }
+    );
+
+    gsap.fromTo('.calendar',
+      { opacity: 0, x: -50 },
+      {
+        scrollTrigger: {
+          trigger: '.calendar',
+          start: 'top 80%',
+          toggleActions: 'play reverse play reverse'
+        },
+        opacity: 1,
+        x: 0,
+        duration: 1,
+        ease: 'power3.out'
+      }
+    );
+
+    gsap.fromTo('.events-content',
+      { opacity: 0, x: 50 },
+      {
+        scrollTrigger: {
+          trigger: '.events-content',
+          start: 'top 80%',
+          toggleActions: 'play reverse play reverse'
+        },
+        opacity: 1,
+        x: 0,
+        duration: 1,
+        ease: 'power3.out'
+      }
+    );
+
+    // Set initial state for event cards
+    gsap.set('.event-card', { opacity: 0, y: 30 });
+    
+    // Animate event cards in
+    gsap.to('.event-card', {
+      scrollTrigger: {
+        trigger: '.events-content',
+        start: 'top 80%',
+        toggleActions: 'play reverse play reverse'
+      },
+      opacity: 1,
+      y: 0,
+      duration: 0.8,
+      stagger: 0.2,
+      ease: 'power3.out'
+    });
+
+    // Partnership section animation
+    gsap.fromTo('.partnership-section',
+      { opacity: 0, y: 50 },
+      {
+        scrollTrigger: {
+          trigger: '.partnership-section',
+          start: 'top 80%',
+          toggleActions: 'play reverse play reverse'
+        },
+        opacity: 1,
+        y: 0,
+        duration: 1,
+        ease: 'power3.out'
+      }
+    );
+
+    // Set initial state for partner cards
+    gsap.set('.partner-card', { opacity: 0, scale: 0.8 });
+    
+    // Animate partner cards in
+    gsap.to('.partner-card', {
+      scrollTrigger: {
+        trigger: '.partners-grid',
+        start: 'top 80%',
+        toggleActions: 'play reverse play reverse'
+      },
+      opacity: 1,
+      scale: 1,
+      duration: 0.8,
+      stagger: 0.1,
+      ease: 'back.out(1.7)'
+    });
+
+    // Sponsorship section animation
+    gsap.fromTo('.sponsorship-section',
+      { opacity: 0, y: 50 },
+      {
+        scrollTrigger: {
+          trigger: '.sponsorship-section',
+          start: 'top 80%',
+          toggleActions: 'play reverse play reverse'
+        },
+        opacity: 1,
+        y: 0,
+        duration: 1,
+        ease: 'power3.out'
+      }
+    );
+
+    gsap.fromTo('.logo-tile',
+      { opacity: 0, scale: 0.5 },
+      {
+        scrollTrigger: {
+          trigger: '.marquee-wrapper',
+          start: 'top 80%',
+          toggleActions: 'play reverse play reverse'
+        },
+        opacity: 1,
+        scale: 1,
+        duration: 0.6,
+        stagger: 0.05,
+        ease: 'back.out(1.7)'
+      }
+    );
+
+    // Feedback section animation
+    gsap.fromTo('.feedback-section',
+      { opacity: 0, y: 50 },
+      {
+        scrollTrigger: {
+          trigger: '.feedback-section',
+          start: 'top 80%',
+          toggleActions: 'play reverse play reverse'
+        },
+        opacity: 1,
+        y: 0,
+        duration: 1,
+        ease: 'power3.out'
+      }
+    );
+
+    // Set initial state for feedback cards
+    gsap.set('.feedback-card', { opacity: 0, y: 40 });
+    
+    // Animate feedback cards in
+    gsap.to('.feedback-card', {
+      scrollTrigger: {
+        trigger: '.feedback-grid',
+        start: 'top 80%',
+        toggleActions: 'play reverse play reverse'
+      },
+      opacity: 1,
+      y: 0,
+      duration: 0.8,
+      stagger: 0.15,
+      ease: 'power3.out'
+    });
+
+    // Footer animation
+    gsap.fromTo('footer',
+      { opacity: 0, y: 50 },
+      {
+        scrollTrigger: {
+          trigger: 'footer',
+          start: 'top 90%',
+          toggleActions: 'play reverse play reverse'
+        },
+        opacity: 1,
+        y: 0,
+        duration: 1,
+        ease: 'power3.out'
+      }
+    );
   }
 
   // Calendar methods
@@ -150,6 +380,43 @@ export class HomeComponent implements OnInit, OnDestroy {
   getEmptyDays(): number[] {
     const firstDay = new Date(this.currentYear, this.currentMonth, 1).getDay();
     return Array(firstDay).fill(0);
+  }
+
+  getPreviousMonthDays(index: number): number {
+    const firstDay = new Date(this.currentYear, this.currentMonth, 1).getDay();
+    const daysInPreviousMonth = new Date(this.currentYear, this.currentMonth, 0).getDate();
+    return daysInPreviousMonth - firstDay + index + 1;
+  }
+
+  getRemainingDays(): number[] {
+    const lastDay = new Date(this.currentYear, this.currentMonth + 1, 0);
+    const lastDayOfWeek = lastDay.getDay();
+    const daysInMonth = lastDay.getDate();
+    const remaining = 6 - lastDayOfWeek;
+    return remaining > 0 ? Array.from({ length: remaining }, (_, i) => i + 1) : [];
+  }
+
+  getEventMonth(dateString: string): string {
+    try {
+      const date = new Date(dateString);
+      return this.monthNames[date.getMonth()].toLowerCase();
+    } catch {
+      return 'june';
+    }
+  }
+
+  getEventDays(dateString: string): string {
+    try {
+      const date = new Date(dateString);
+      const day = date.getDate();
+      // For Love Boracay 2026 event (June 1 & 2), return "1 & 2"
+      if (date.getMonth() === 5 && (day === 1 || day === 2) && date.getFullYear() === 2026) {
+        return '1 & 2';
+      }
+      return day.toString();
+    } catch {
+      return '1 & 2';
+    }
   }
 
   getDaysInMonth(): number[] {
@@ -177,7 +444,7 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   hasEvent(day: number): boolean {
     return this.currentMonth === 5 && // June
-           this.currentYear === 2025 && 
+           this.currentYear === 2026 && 
            this.eventDays.includes(day);
   }
 
@@ -201,38 +468,6 @@ export class HomeComponent implements OnInit, OnDestroy {
     }
   }
 
-  private handleScrollAnimations() {
-    const elements = this.elementRef.nativeElement.querySelectorAll('.fade-in');
-    elements.forEach((element: HTMLElement) => {
-      const elementTop = element.getBoundingClientRect().top;
-      const elementVisible = 150;
-      
-      if (elementTop < window.innerHeight - elementVisible) {
-        this.renderer.addClass(element, 'visible');
-      }
-    });
-  }
-
-  private handleHeaderScroll() {
-    const header = this.elementRef.nativeElement.querySelector('header');
-    if (header) {
-      if (window.scrollY > 100) {
-        this.renderer.setStyle(header, 'background', 'rgba(255, 255, 255, 0.95)');
-        this.renderer.setStyle(header, 'backdrop-filter', 'blur(20px)');
-      } else {
-        this.renderer.setStyle(header, 'background', 'linear-gradient(135deg, #ffffff 0%, #f0f9f0 100%)');
-        this.renderer.setStyle(header, 'backdrop-filter', 'blur(10px)');
-      }
-    }
-  }
-
-  private handleParallax() {
-    const scrolled = window.pageYOffset;
-    const hero = this.elementRef.nativeElement.querySelector('.hero');
-    if (hero) {
-      this.renderer.setStyle(hero, 'transform', `translateY(${scrolled * 0.5}px)`);
-    }
-  }
 
   private setupInteractiveEffects() {
     // Add hover effects to cards
@@ -301,46 +536,4 @@ export class HomeComponent implements OnInit, OnDestroy {
     }, 3000);
   }
 
-  private startParticleAnimation() {
-    this.particleInterval = setInterval(() => {
-      this.createParticle();
-    }, 2000);
-  }
-
-  private createParticle() {
-    const particle = this.renderer.createElement('div');
-    
-    const particleStyles = `
-      position: fixed;
-      width: 4px;
-      height: 4px;
-      background: linear-gradient(45deg, #228B22, #32CD32);
-      border-radius: 50%;
-      pointer-events: none;
-      z-index: -1;
-      opacity: 0.6;
-      left: ${Math.random() * window.innerWidth}px;
-      top: ${window.innerHeight}px;
-    `;
-    
-    this.renderer.setAttribute(particle, 'style', particleStyles);
-    this.renderer.appendChild(document.body, particle);
-    
-    // Animate particle
-    const keyframes = [
-      { transform: 'translateY(0px)', opacity: '0.6' },
-      { transform: `translateY(-${window.innerHeight + 100}px)`, opacity: '0' }
-    ];
-    
-    const options = {
-      duration: Math.random() * 3000 + 2000,
-      easing: 'linear'
-    };
-    
-    const animation = particle.animate(keyframes, options);
-    
-    animation.addEventListener('finish', () => {
-      this.renderer.removeChild(document.body, particle);
-    });
-  }
 }
